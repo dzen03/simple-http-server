@@ -1,8 +1,10 @@
 #ifndef SIMPLE_HTTP_SERVER_LIBS_ISOCKET_H_
 #define SIMPLE_HTTP_SERVER_LIBS_ISOCKET_H_
 
-#include <string>
+#include <memory>
 #include <optional>
+#include <string>
+#include <vector>
 
 #include "util.h"
 

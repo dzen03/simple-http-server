@@ -1,10 +1,13 @@
 #include "PosixSocket.h"
 
+#include <arpa/inet.h>
+#include <memory>
+#include <netinet/in.h>
+#include <string>
 #include <sys/socket.h>
 #include <unistd.h>
-#include <netinet/in.h>
 #include <vector>
-#include <arpa/inet.h>
+
 
 namespace simple_http_server {
 
@@ -66,12 +69,12 @@ bool PosixSocket::ReceiveMessage(PosixSocket::SocketDescriptor clint_socket,
 
 
 sockaddr_in PosixSocket::CreateAddress(const std::string &address, int port) {
-  return {
-      .sin_len = 0,
-      .sin_family = AF_INET,
-      .sin_port = htons(port),
-      .sin_addr = {.s_addr = inet_addr(address.c_str())},
-      .sin_zero = {0}};
+  sockaddr_in res{};
+  res.sin_family = AF_INET;
+  res.sin_port = htons(port);
+  res.sin_addr.s_addr = inet_addr(address.c_str());
+
+  return res;
 }
 
 } // SimpleHttpServer

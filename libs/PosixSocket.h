@@ -3,9 +3,12 @@
 
 #include "ISocket.h"
 
-#include <sys/socket.h>
 #include <arpa/inet.h>
+#include <memory>
 #include <netinet/in.h>
+#include <string>
+#include <sys/socket.h>
+#include <vector>
 
 namespace simple_http_server {
 
