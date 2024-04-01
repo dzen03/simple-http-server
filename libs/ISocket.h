@@ -31,7 +31,7 @@ class ISocket {
   virtual bool BindAndListen(std::string address, int port) = 0;
 
   virtual std::optional<SocketDescriptor> Accept() = 0;
-  virtual bool ReceiveMessage(SocketDescriptor clint_socket,
+  virtual int ReceiveMessage(SocketDescriptor clint_socket,
                          std::shared_ptr<std::vector<Byte>> message) = 0;
 };
 

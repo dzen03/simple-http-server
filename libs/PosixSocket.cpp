@@ -58,13 +58,9 @@ std::optional<PosixSocket::SocketDescriptor> PosixSocket::Accept() {
   return client_addr;
 }
 
-bool PosixSocket::ReceiveMessage(PosixSocket::SocketDescriptor clint_socket,
+int PosixSocket::ReceiveMessage(PosixSocket::SocketDescriptor clint_socket,
                                  std::shared_ptr<std::vector<PosixSocket::Byte>> message) {
-  if (recv(clint_socket, message->data(), message->size(), 0) < 0) {
-    return false;
-  }
-
-  return true;
+  return recv(clint_socket, message->data(), message->size(), 0);
 }
 
 

@@ -23,7 +23,7 @@ class PosixSocket : protected ISocket {
   bool SendMessage(const std::shared_ptr<std::vector<Byte>>& message,
                    SocketDescriptor socket_addr) override;
   std::optional<SocketDescriptor> Accept() override;
-  bool ReceiveMessage(SocketDescriptor clint_socket, std::shared_ptr<std::vector<Byte>> message) override;
+  int ReceiveMessage(SocketDescriptor clint_socket, std::shared_ptr<std::vector<Byte>> message) override;
  private:
   SocketDescriptor socketDescriptor_;
   sockaddr_in address_;

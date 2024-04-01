@@ -21,7 +21,7 @@ TEST(Socket, BasicPing) {
     auto client_sock = server.Accept();
 
     EXPECT_TRUE(client_sock);
-    EXPECT_TRUE(server.ReceiveMessage(client_sock.value(), buffer));
+    EXPECT_TRUE(server.ReceiveMessage(client_sock.value(), buffer) > 0);
   });
 
   // TODO think about race here

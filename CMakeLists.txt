@@ -3,6 +3,65 @@ project(simple-http-server)
 
 set(CMAKE_CXX_STANDARD 20)
 
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
+
+if(CMAKE_C_COMPILER_ID STREQUAL GNU)
+    set(CMAKE_CONFIGURATION_TYPES Debug Release ASan LSan UBSan)
+elseif(CMAKE_C_COMPILER_ID MATCHES Clang)
+    set(CMAKE_CONFIGURATION_TYPES Debug Release ASan LSan MSan UBSan)
+elseif(MSVC)
+    set(CMAKE_CONFIGURATION_TYPES Debug Release ASan)
+endif()
+
+if(CMAKE_BUILD_TYPE AND NOT CMAKE_BUILD_TYPE IN_LIST CMAKE_CONFIGURATION_TYPES)
+    message(FATAL_ERROR "Unexpected build type ${CMAKE_BUILD_TYPE}, possible values: ${CMAKE_CONFIGURATION_TYPES}")
+endif()
+
+if(CMAKE_C_COMPILER_ID STREQUAL GNU OR CMAKE_C_COMPILER_ID MATCHES Clang)
+    set(CMAKE_C_FLAGS       "-std=20 -pedantic -Wall -Werror -ggdb")
+    set(CMAKE_C_FLAGS_ASAN  "${CMAKE_C_FLAGS_DEBUG} -fsanitize=address -fno-optimize-sibling-calls -fno-omit-frame-pointer")
+    set(CMAKE_C_FLAGS_LSAN  "${CMAKE_C_FLAGS_DEBUG} -fsanitize=leak")
+    set(CMAKE_C_FLAGS_MSAN  "${CMAKE_C_FLAGS_DEBUG} -fsanitize=memory -fno-optimize-sibling-calls -fno-omit-frame-pointer")
+    set(CMAKE_C_FLAGS_UBSAN "${CMAKE_C_FLAGS_DEBUG} -fsanitize=undefined")
+elseif(MSVC)
+    set(CMAKE_C_FLAGS       "/std:c20 /W4 /WX")
+    set(CMAKE_C_FLAGS_ASAN  "${CMAKE_C_FLAGS_DEBUG} /fsanitize=address")
+    set(CMAKE_EXE_LINKER_FLAGS_ASAN "/debug /INCREMENTAL:NO")
+endif()
+
+
+if(CMAKE_CXX_COMPILER_ID STREQUAL GNU OR CMAKE_CXX_COMPILER_ID MATCHES Clang)
+    set(CMAKE_CXX_FLAGS       "-std=c++20 -pedantic -Wall -Werror -ggdb")
+    set(CMAKE_CXX_FLAGS_ASAN  "${CMAKE_C_FLAGS_DEBUG} -fsanitize=address -fno-optimize-sibling-calls -fno-omit-frame-pointer")
+    set(CMAKE_CXX_FLAGS_LSAN  "${CMAKE_C_FLAGS_DEBUG} -fsanitize=leak")
+    set(CMAKE_CXX_FLAGS_MSAN  "${CMAKE_C_FLAGS_DEBUG} -fsanitize=memory -fno-optimize-sibling-calls -fno-omit-frame-pointer")
+    set(CMAKE_CXX_FLAGS_UBSAN "${CMAKE_C_FLAGS_DEBUG} -fsanitize=undefined")
+elseif(MSVC)
+    set(CMAKE_CXX_FLAGS       "/std:c++20 /W4 /WX")
+    set(CMAKE_CXX_FLAGS_ASAN  "${CMAKE_C_FLAGS_DEBUG} /fsanitize=address")
+    set(CMAKE_EXE_LINKER_FLAGS_ASAN "/debug /INCREMENTAL:NO")
+endif()
+
+find_program(CLANG_TIDY clang-tidy)
+message(STATUS "Clang-tidy: ${CLANG_TIDY}")
+if(False/*CLANG_TIDY*) # TODO enable (?) fucking clang tidy
+    file(STRINGS clang-tidy-checks.txt clang_tidy_checks)
+    list(JOIN clang_tidy_checks "," clang_tidy_checks_str)
+    set(CMAKE_C_CLANG_TIDY
+            ${CLANG_TIDY}
+            -header-filter=${CMAKE_SOURCE_DIR}
+            -checks=${clang_tidy_checks_str}
+            -warnings-as-errors=*
+    )
+    set(CMAKE_CXX_CLANG_TIDY
+            ${CLANG_TIDY}
+            -header-filter=${CMAKE_SOURCE_DIR}
+            -checks=${clang_tidy_checks_str}
+            -warnings-as-errors=*
+    )
+endif()
+
 if (MSVC)
     add_compile_options(/W4 /WX)
 else()
@@ -31,3 +90,5 @@ endif()
 
 add_executable(http-server main.cpp)
 target_link_libraries(http-server PRIVATE simple-http-server-sources)
+
+
