@@ -1,7 +1,9 @@
+#include "util.h"
+
+#if defined(POSIX)
+
 #include "PosixSocket.h"
-
 #include <thread>
-
 #include <gtest/gtest.h>
 
 using namespace simple_http_server;
@@ -33,3 +35,5 @@ TEST(Socket, BasicPing) {
 
   EXPECT_EQ(*buffer, test_message);
 }
+
+#endif // POSIX
