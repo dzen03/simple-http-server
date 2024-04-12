@@ -22,6 +22,8 @@ class PosixSocket : protected ISocket {
   bool SendMessage(const std::shared_ptr<std::vector<Byte>>& message) override;
   bool SendMessage(const std::shared_ptr<std::vector<Byte>>& message,
                    SocketDescriptor socket_addr) override;
+  bool SendMessageAndCloseClient(const std::shared_ptr<std::vector<Byte>>& message,
+                   SocketDescriptor socket_addr) override;
   std::optional<SocketDescriptor> Accept() override;
   int ReceiveMessage(SocketDescriptor clint_socket, std::shared_ptr<std::vector<Byte>> message) override;
  private:

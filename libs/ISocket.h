@@ -26,6 +26,8 @@ class ISocket {
   virtual bool Connect(std::string address, int port) = 0;
   virtual bool SendMessage(const std::shared_ptr<std::vector<Byte>>& message,
                            SocketDescriptor socket_addr) = 0;
+  virtual bool SendMessageAndCloseClient(const std::shared_ptr<std::vector<Byte>>& message,
+                           SocketDescriptor socket_addr) = 0;
   virtual bool SendMessage(const std::shared_ptr<std::vector<Byte>>& message) = 0;
 
   virtual bool BindAndListen(std::string address, int port) = 0;

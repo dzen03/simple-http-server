@@ -46,6 +46,13 @@ bool PosixSocket::SendMessage(const std::shared_ptr<std::vector<PosixSocket::Byt
   return (send(socket_addr, message->data(), message->size(), 0) != -1);
 }
 
+bool PosixSocket::SendMessageAndCloseClient(const std::shared_ptr<std::vector<PosixSocket::Byte>>& message,
+                              SocketDescriptor socket_addr) {
+  auto res = send(socket_addr, message->data(), message->size(), 0) != -1;
+  close(socket_addr);
+  return res;
+}
+
 std::optional<PosixSocket::SocketDescriptor> PosixSocket::Accept() {
   socklen_t address_size = sizeof(address_);
 
