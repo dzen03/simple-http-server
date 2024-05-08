@@ -1,7 +1,7 @@
 #ifndef SIMPLE_HTTP_SERVER_LIBS_SERVER_H_
 #define SIMPLE_HTTP_SERVER_LIBS_SERVER_H_
 
-#include "PosixSocket.h"
+#include "ISocket.h"
 #include "util.h"
 
 #include <atomic>
@@ -36,24 +36,21 @@ class Server {
     HeadersMap headers;
     std::string body;
   };
-  Server() = default;
-  void Start(const std::string& ip="0.0.0.0", int port=8080);
+  Server();
+  void Start(const std::string &ip = "0.0.0.0", int port = 8080);
   void Stop();
 
-  void MapUrl(const std::string& path, const std::function<Server::Response(Server::Request)>& function);
+  void MapUrl(const std::string &path, const std::function<Server::Response(Server::Request)> &function);
 
-  static ArgumentsMap ParseArguments(const std::string& url_with_args);
-  static Request ParseRequest(const std::string& stringRequest);
-  static Response CreateResponse(int statusCode, const std::string& body="", const std::string& statusMessage="",
-                                 const HeadersMap& headers=HeadersMap());
-  static std::string DumpResponse(const Response& response);
+  static ArgumentsMap ParseArguments(const std::string &url_with_args);
+  static Request ParseRequest(const std::string &stringRequest);
+  static Response CreateResponse(int statusCode, const std::string &body = "", const std::string &statusMessage = "",
+                                 const HeadersMap &headers = HeadersMap());
+  static std::string DumpResponse(const Response &response);
  private:
-#if defined(POSIX)
-  PosixSocket socket_;
-#elif defined(WINDOWS)
-#error Windows not implemented yet
-#endif
-  inline static const std::unordered_map<int, std::string> defaultMessages_ = {{200, "OK"}, {404, "Not Found"}, {500, "Internal Server Error"}};
+  std::unique_ptr<ISocket> socket_;
+  inline static const std::unordered_map<int, std::string>
+      defaultMessages_{{200, "OK"}, {404, "Not Found"}, {500, "Internal Server Error"}};
   std::unordered_map<std::string, std::function<Response(Request)>> mappedUrls_;
   volatile std::atomic<bool> running_;
 };

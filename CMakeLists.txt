@@ -88,6 +88,11 @@ if(BUILD_TESTING)
     add_subdirectory(tests)
 endif()
 
+if(WIN32)
+    set(CMAKE_EXE_LINKER_FLAGS "-static")
+    link_libraries(Ws2_32 Mswsock AdvApi32)
+endif()
+
 add_executable(http-server main.cpp)
 target_link_libraries(http-server PRIVATE simple-http-server-sources)
 

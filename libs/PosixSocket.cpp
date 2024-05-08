@@ -1,3 +1,7 @@
+#include "util.h"
+
+#ifdef POSIX
+
 #include "PosixSocket.h"
 
 #include <arpa/inet.h>
@@ -81,3 +85,5 @@ sockaddr_in PosixSocket::CreateAddress(const std::string &address, int port) {
 }
 
 } // SimpleHttpServer
+
+#endif //POSIX

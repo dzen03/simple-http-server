@@ -1,5 +1,9 @@
 include(GoogleTest)
 
+if (WIN32)
+    link_libraries(Ws2_32 Mswsock AdvApi32)
+endif ()
+
 FILE(GLOB_RECURSE test_sources CONFIGURE_DEPENDS
         *.cpp
 )
@@ -14,3 +18,4 @@ foreach(test_source IN LISTS test_sources)
 
     gtest_discover_tests(test_${name})
 endforeach()
+

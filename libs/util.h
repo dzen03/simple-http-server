@@ -1,4 +1,3 @@
-// start of platform dependant functions
 #if defined __has_include
   #if __has_include(<winsock2.h>)
     #define WINDOWS

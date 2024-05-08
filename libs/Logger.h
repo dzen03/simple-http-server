@@ -12,8 +12,7 @@ namespace simple_http_server {
   X(ERROR, "ERROR") \
 
 #define X(level, name) level,
-enum Level
-{
+enum Level {
   LOGGER_LEVELS
 };
 #undef X
@@ -27,7 +26,7 @@ class Logger {
   static constexpr auto logFilename = "server.log";
 
   Logger() = default;
-  static void Log(const char* level, std::ostringstream&& message);
+  static void Log(const char *level, std::ostringstream &&message);
 
 #define X(level, name) name,
   inline static char const *level_name[] =

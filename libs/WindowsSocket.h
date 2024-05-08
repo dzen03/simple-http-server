@@ -3,42 +3,49 @@
 
 #include "util.h"
 
-#ifdef POSIX
+#ifdef WINDOWS
 
 #include "ISocket.h"
 
-#include <arpa/inet.h>
+#include <winsock2.h>
+#include <windows.h>
+#include <ws2tcpip.h>
 #include <memory>
-#include <netinet/in.h>
 #include <string>
-#include <sys/socket.h>
 #include <vector>
 
 namespace simple_http_server {
 
-class PosixSocket : public ISocket {
+class WindowsSocket : public ISocket {
  public:
-  PosixSocket();
-  ~PosixSocket() override;
+  WindowsSocket();
+  ~WindowsSocket() override;
 
   bool BindAndListen(std::string address, int port) override;
   bool Connect(std::string address, int port) override;
+
+#undef SendMessage
+
   bool SendMessage(const std::shared_ptr<std::vector<Byte>> &message) override;
   bool SendMessage(const std::shared_ptr<std::vector<Byte>> &message,
                    SocketDescriptor socket_addr) override;
   bool SendMessageAndCloseClient(const std::shared_ptr<std::vector<Byte>> &message,
-                   SocketDescriptor socket_addr) override;
+                                 SocketDescriptor socket_addr) override;
   std::optional<SocketDescriptor> Accept() override;
   int ReceiveMessage(SocketDescriptor clint_socket, std::shared_ptr<std::vector<Byte>> message) override;
  private:
-  SocketDescriptor socketDescriptor_;
-  sockaddr_in address_;
+  SOCKET socketDescriptor_;
+  addrinfo address_;
 
-  static sockaddr_in CreateAddress(const std::string& address, int port);
+  inline static WSADATA wsaData_ {};
+  inline static bool wsaStarted_ = false;
+  inline static std::mutex wsaLock_ {};
+
+  static addrinfo CreateAddress(const std::string &address, int port);
 };
 
 } // SimpleHttpServer
 
-#endif // POSIX
+#endif // WINDOWS
 
 #endif //SIMPLE_HTTP_SERVER_LIBS_POSIXSOCKET_H_
