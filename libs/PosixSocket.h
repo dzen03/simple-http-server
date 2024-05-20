@@ -27,14 +27,14 @@ class PosixSocket : public ISocket {
   bool SendMessage(const std::shared_ptr<std::vector<Byte>> &message,
                    SocketDescriptor socket_addr) override;
   bool SendMessageAndCloseClient(const std::shared_ptr<std::vector<Byte>> &message,
-                   SocketDescriptor socket_addr) override;
+                                 SocketDescriptor socket_addr) override;
   std::optional<SocketDescriptor> Accept() override;
   int ReceiveMessage(SocketDescriptor clint_socket, std::shared_ptr<std::vector<Byte>> message) override;
  private:
   SocketDescriptor socketDescriptor_;
   sockaddr_in address_;
 
-  static sockaddr_in CreateAddress(const std::string& address, int port);
+  static sockaddr_in CreateAddress(const std::string &address, int port);
 };
 
 } // SimpleHttpServer

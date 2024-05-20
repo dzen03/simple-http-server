@@ -88,7 +88,7 @@ Server::ArgumentsMap Server::ParseArguments(const std::string &url_with_args) {
     return next_arg;
   };
 
-  while (next_arg!=std::string::npos) {
+  while (next_arg != std::string::npos) {
     next_arg = parse_argument(next_arg);
   }
 

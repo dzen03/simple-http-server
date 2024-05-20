@@ -1,6 +1,7 @@
 #include "SocketFactory.h"
-
 #include "util.h"
+
+#include <memory>
 
 #ifdef POSIX
   #include "PosixSocket.h"

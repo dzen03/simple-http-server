@@ -10,9 +10,9 @@ TEST(Server, CreateAndDumpResponseWithHeaders) {
   std::ostringstream canon_response;
 
   canon_response << "HTTP/1.1 200 OK" << "\r\n"
-           << "Content-Length: 11" << "\r\n"
-           << "\r\n"
-           << "Hello world";
+                 << "Content-Length: 11" << "\r\n"
+                 << "\r\n"
+                 << "Hello world";
 
   auto response = Server::DumpResponse(Server::CreateResponse(200, "Hello world", "", {{"Content-Length", "11"}}));
 
@@ -68,12 +68,12 @@ TEST(Server, ParseRequestWithArguments) {
   auto parsed = Server::ParseRequest(request);
 
   Server::Request canon = {.type=Server::Request::GET,
-      .url="/home.html",
-      .arguments={{"a", "b"}, {"c", "d"}},
-      .httpVersion="HTTP/1.1",
-      .headers={{"Host", "developer.mozilla.org"},
-                {"User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.9; rv:50.0) Gecko/20100101 Firefox/50.0"}},
-      .body=""};
+                           .url="/home.html",
+                           .arguments={{"a", "b"}, {"c", "d"}},
+                           .httpVersion="HTTP/1.1",
+                           .headers={{"Host", "developer.mozilla.org"},
+                                     {"User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.9; rv:50.0) Gecko/20100101 Firefox/50.0"}},
+                           .body=""};
 
   EXPECT_EQ(canon.type, parsed.type);
   EXPECT_EQ(canon.url, parsed.url);

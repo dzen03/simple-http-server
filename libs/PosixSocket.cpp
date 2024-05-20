@@ -12,7 +12,6 @@
 #include <unistd.h>
 #include <vector>
 
-
 namespace simple_http_server {
 
 PosixSocket::PosixSocket() {
@@ -26,7 +25,7 @@ PosixSocket::~PosixSocket() {
 bool PosixSocket::BindAndListen(std::string address, int port) {
   address_ = CreateAddress(address, port);
 
-  if (bind(socketDescriptor_, reinterpret_cast<sockaddr*> (&address_),
+  if (bind(socketDescriptor_, reinterpret_cast<sockaddr *> (&address_),
            sizeof(address_)) == -1) {
     return false;
   }
@@ -37,21 +36,21 @@ bool PosixSocket::BindAndListen(std::string address, int port) {
 bool PosixSocket::Connect(std::string address, int port) {
   address_ = CreateAddress(address, port);
 
-  return (connect(socketDescriptor_, reinterpret_cast<sockaddr*> (&address_),
+  return (connect(socketDescriptor_, reinterpret_cast<sockaddr *> (&address_),
                   sizeof(address_)) == 0);
 }
 
-bool PosixSocket::SendMessage(const std::shared_ptr<std::vector<PosixSocket::Byte>>& message) {
+bool PosixSocket::SendMessage(const std::shared_ptr<std::vector<PosixSocket::Byte>> &message) {
   return (send(socketDescriptor_, message->data(), message->size(), 0) != -1);
 }
 
-bool PosixSocket::SendMessage(const std::shared_ptr<std::vector<PosixSocket::Byte>>& message,
+bool PosixSocket::SendMessage(const std::shared_ptr<std::vector<PosixSocket::Byte>> &message,
                               SocketDescriptor socket_addr) {
   return (send(socket_addr, message->data(), message->size(), 0) != -1);
 }
 
-bool PosixSocket::SendMessageAndCloseClient(const std::shared_ptr<std::vector<PosixSocket::Byte>>& message,
-                              SocketDescriptor socket_addr) {
+bool PosixSocket::SendMessageAndCloseClient(const std::shared_ptr<std::vector<PosixSocket::Byte>> &message,
+                                            SocketDescriptor socket_addr) {
   auto res = send(socket_addr, message->data(), message->size(), 0) != -1;
   close(socket_addr);
   return res;
@@ -70,10 +69,9 @@ std::optional<PosixSocket::SocketDescriptor> PosixSocket::Accept() {
 }
 
 int PosixSocket::ReceiveMessage(PosixSocket::SocketDescriptor clint_socket,
-                                 std::shared_ptr<std::vector<PosixSocket::Byte>> message) {
+                                std::shared_ptr<std::vector<PosixSocket::Byte>> message) {
   return recv(clint_socket, message->data(), message->size(), 0);
 }
-
 
 sockaddr_in PosixSocket::CreateAddress(const std::string &address, int port) {
   sockaddr_in res{};
