@@ -1,15 +1,15 @@
 #include "Server.h"
 
-using namespace simple_http_server;
+auto main() -> int {
+  simple_http_server::Server server;
 
-int main() {
-  Server server;
-
-  server.MapUrl("/test", [](const Server::Request&){
-    return Server::CreateResponse(200, "Hello world");
+  server.MapUrl("/test", [](const simple_http_server::Server::Request&){
+    static constexpr int OK_CODE = 200;
+    return simple_http_server::Server::CreateResponse(OK_CODE, "Hello world");
   });
 
-  server.Start();
+  static constexpr int DEFAULT_PORT = 8080;
+  server.Start("0.0.0.0", DEFAULT_PORT);
 
   return 0;
 }

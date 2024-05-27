@@ -12,15 +12,17 @@ Server::Server() {
   socket_ = SocketFactory::CreateSocket();
 }
 
-void Server::Start(const std::string &ip, int port) {
+void Server::Start(const std::string &ip_addr, int port) {
   if (mappedUrls_.empty()) {
     LOG(WARNING, "there is no urls mapped");
   }
 
   running_ = true;
-  socket_->BindAndListen(ip, port);
+  socket_->BindAndListen(ip_addr, port);
 
-  auto buffer = std::make_shared<ISocket::Message>(ISocket::Message(1000));
+  static constexpr int MESSAGE_LENGTH = 1000;
+
+  auto buffer = std::make_shared<ISocket::Message>(ISocket::Message(MESSAGE_LENGTH));
 
   while (running_) {
     auto client_sock = socket_->Accept();
@@ -29,20 +31,21 @@ void Server::Start(const std::string &ip, int port) {
       continue;
     }
 
-    int received_len = socket_->ReceiveMessage(client_sock.value(), buffer);
+    const size_t received_len = socket_->ReceiveMessage(client_sock.value(), buffer);
 
     std::string string_request = std::string(buffer->begin(), buffer->end());
     string_request.resize(received_len);
 
     LOG(INFO, "got request " << NAMED_OUTPUT(string_request));
 
-    Request request = ParseRequest(string_request);
+    const auto request = ParseRequest(string_request);
 
     Response response;
     if (mappedUrls_.contains(request.url)) {
       response = mappedUrls_[request.url](request);
     } else {
-      response = CreateResponse(404);
+      static constexpr int NOT_FOUND_CODE = 404;
+      response = CreateResponse(NOT_FOUND_CODE);
     }
 
     auto string_response = DumpResponse(response);
@@ -66,7 +69,7 @@ void Server::MapUrl(const std::string &path, const std::function<Server::Respons
   mappedUrls_.insert({path, function});
 }
 
-Server::ArgumentsMap Server::ParseArguments(const std::string &url_with_args) {
+auto Server::ParseArguments(const std::string &url_with_args) -> ArgumentsMap {
   auto args_start = url_with_args.find('?');
 
   ArgumentsMap ret;
@@ -95,7 +98,7 @@ Server::ArgumentsMap Server::ParseArguments(const std::string &url_with_args) {
   return ret;
 }
 
-Server::Request Server::ParseRequest(const std::string &stringRequest) {
+auto Server::ParseRequest(const std::string &stringRequest) -> Request {
   std::istringstream req(stringRequest);
 
   Request ret;
@@ -103,8 +106,12 @@ Server::Request Server::ParseRequest(const std::string &stringRequest) {
   std::string type;
   req >> type;
 
-  if (type == "GET") ret.type = Request::Type::GET;
-  else if (type == "POST") ret.type = Request::Type::POST;
+  if (type == "GET") {
+    ret.type = Request::Type::GET;
+  }
+  else if (type == "POST") {
+    ret.type = Request::Type::POST;
+  }
   else {
     LOG(WARNING, "got unknown request type: " << stringRequest);
     ret.type = Request::Type::UNKNOWN;
@@ -137,9 +144,9 @@ Server::Request Server::ParseRequest(const std::string &stringRequest) {
       continue;
     }
 
-    std::string key = header_line.substr(0, colon);
+    const auto key = header_line.substr(0, colon);
 
-    std::string value = header_line.substr(header_line.find_first_not_of(" \n\r\t", colon + 1));
+    const auto value = header_line.substr(header_line.find_first_not_of(" \n\r\t", colon + 1));
 
     ret.headers.insert({key, value});
   }
@@ -149,13 +156,13 @@ Server::Request Server::ParseRequest(const std::string &stringRequest) {
   return ret;
 }
 
-Server::Response Server::CreateResponse(int statusCode, const std::string &body, const std::string &statusMessage,
-                                        const HeadersMap &headers) {
+auto Server::CreateResponse(int statusCode, const std::string &body, const std::string &statusMessage,
+                                        const HeadersMap &headers) -> Response {
   Response response = {.httpVersion = "HTTP/1.1",
-      .statusCode = statusCode,
-      .statusMessage = (statusMessage.empty() ? defaultMessages_.at(statusCode) : statusMessage),
-      .headers = headers,
-      .body = body};
+                       .statusCode = statusCode,
+                       .statusMessage = (statusMessage.empty() ? defaultMessages_.at(statusCode) : statusMessage),
+                       .headers = headers,
+                       .body = body};
 
   if (!headers.contains("Content-Length")) {
     response.headers.insert({"Content-Length", std::to_string(response.body.length())});
@@ -164,7 +171,7 @@ Server::Response Server::CreateResponse(int statusCode, const std::string &body,
   return response;
 }
 
-std::string Server::DumpResponse(const Server::Response &response) {
+auto Server::DumpResponse(const Server::Response &response) -> std::string {
   std::ostringstream string_response;
 
   string_response << response.httpVersion << " " << response.statusCode << " " << response.statusMessage << "\r\n";
@@ -183,4 +190,4 @@ std::string Server::DumpResponse(const Server::Response &response) {
   return string_response.str();
 }
 
-} // simple_http_server
+} // namespace simple_http_server

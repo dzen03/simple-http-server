@@ -2,6 +2,7 @@
 #define SIMPLE_HTTP_SERVER_LIBS_LOGGER_H_
 
 #include <fstream>
+#include <vector>
 
 namespace simple_http_server {
 
@@ -17,6 +18,7 @@ enum Level {
 };
 #undef X
 
+// NOLINTNEXTLINE(bugprone-macro-parentheses)
 #define LOG(level, message) Logger::Log((Logger::level_name[level]), (std::ostringstream() << message))
 
 #define NAMED_OUTPUT(variable) #variable << ": " << variable
@@ -25,11 +27,11 @@ class Logger {
  public:
   static constexpr auto logFilename = "server.log";
 
-  Logger() = default;
   static void Log(const char *level, std::ostringstream &&message);
+  static void Flush();
 
 #define X(level, name) name,
-  inline static char const *level_name[] =
+  inline static const std::vector<char const *> level_name =
       {
           LOGGER_LEVELS
       };
@@ -38,6 +40,6 @@ class Logger {
   static std::ofstream logStream_;
 };
 
-} // simple_http_server
+} // namespace simple_http_server
 
 #endif //SIMPLE_HTTP_SERVER_LIBS_LOGGER_H_

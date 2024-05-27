@@ -7,6 +7,7 @@
 #include <arpa/inet.h>
 #include <memory>
 #include <netinet/in.h>
+#include <optional>
 #include <string>
 #include <sys/socket.h>
 #include <unistd.h>
@@ -22,7 +23,7 @@ PosixSocket::~PosixSocket() {
   close(socketDescriptor_);
 }
 
-bool PosixSocket::BindAndListen(std::string address, int port) {
+auto PosixSocket::BindAndListen(std::string address, int port) -> bool {
   address_ = CreateAddress(address, port);
 
   if (bind(socketDescriptor_, reinterpret_cast<sockaddr *> (&address_),
@@ -33,33 +34,33 @@ bool PosixSocket::BindAndListen(std::string address, int port) {
   return (listen(socketDescriptor_, 1) == 0);
 }
 
-bool PosixSocket::Connect(std::string address, int port) {
+auto PosixSocket::Connect(std::string address, int port) -> bool {
   address_ = CreateAddress(address, port);
 
   return (connect(socketDescriptor_, reinterpret_cast<sockaddr *> (&address_),
                   sizeof(address_)) == 0);
 }
 
-bool PosixSocket::SendMessage(const std::shared_ptr<std::vector<PosixSocket::Byte>> &message) {
+auto PosixSocket::SendMessage(const std::shared_ptr<std::vector<PosixSocket::Byte>> &message) -> bool {
   return (send(socketDescriptor_, message->data(), message->size(), 0) != -1);
 }
 
-bool PosixSocket::SendMessage(const std::shared_ptr<std::vector<PosixSocket::Byte>> &message,
-                              SocketDescriptor socket_addr) {
+auto PosixSocket::SendMessage(const std::shared_ptr<std::vector<PosixSocket::Byte>> &message,
+                              SocketDescriptor socket_addr) -> bool {
   return (send(socket_addr, message->data(), message->size(), 0) != -1);
 }
 
-bool PosixSocket::SendMessageAndCloseClient(const std::shared_ptr<std::vector<PosixSocket::Byte>> &message,
-                                            SocketDescriptor socket_addr) {
+auto PosixSocket::SendMessageAndCloseClient(const std::shared_ptr<std::vector<PosixSocket::Byte>> &message,
+                                            SocketDescriptor socket_addr) -> bool {
   auto res = send(socket_addr, message->data(), message->size(), 0) != -1;
   close(socket_addr);
   return res;
 }
 
-std::optional<PosixSocket::SocketDescriptor> PosixSocket::Accept() {
+auto PosixSocket::Accept() -> std::optional<SocketDescriptor> {
   socklen_t address_size = sizeof(address_);
 
-  PosixSocket::SocketDescriptor client_addr;
+  PosixSocket::SocketDescriptor client_addr = -1;
   if (client_addr = accept(socketDescriptor_, reinterpret_cast<sockaddr *>(&address_),
                            &address_size); client_addr == -1) {
     return std::nullopt;
@@ -68,12 +69,12 @@ std::optional<PosixSocket::SocketDescriptor> PosixSocket::Accept() {
   return client_addr;
 }
 
-int PosixSocket::ReceiveMessage(PosixSocket::SocketDescriptor clint_socket,
-                                std::shared_ptr<std::vector<PosixSocket::Byte>> message) {
+auto PosixSocket::ReceiveMessage(PosixSocket::SocketDescriptor clint_socket,
+                                std::shared_ptr<std::vector<PosixSocket::Byte>> message) -> size_t {
   return recv(clint_socket, message->data(), message->size(), 0);
 }
 
-sockaddr_in PosixSocket::CreateAddress(const std::string &address, int port) {
+auto PosixSocket::CreateAddress(const std::string &address, int port) -> sockaddr_in {
   sockaddr_in res{};
   res.sin_family = AF_INET;
   res.sin_port = htons(port);
@@ -82,6 +83,6 @@ sockaddr_in PosixSocket::CreateAddress(const std::string &address, int port) {
   return res;
 }
 
-} // SimpleHttpServer
+} // namespace simple_http_server
 
 #endif //POSIX

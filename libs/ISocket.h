@@ -1,6 +1,7 @@
 #ifndef SIMPLE_HTTP_SERVER_LIBS_ISOCKET_H_
 #define SIMPLE_HTTP_SERVER_LIBS_ISOCKET_H_
 
+#include <cstdint>
 #include <memory>
 #include <optional>
 #include <string>
@@ -19,20 +20,26 @@ class ISocket {
   ISocket() = default;
   virtual ~ISocket() = default;
 
-  virtual bool Connect(std::string address, int port) = 0;
-  virtual bool SendMessage(const std::shared_ptr<std::vector<Byte>> &message,
-                           SocketDescriptor socket_addr) = 0;
-  virtual bool SendMessageAndCloseClient(const std::shared_ptr<std::vector<Byte>> &message,
-                                         SocketDescriptor socket_addr) = 0;
-  virtual bool SendMessage(const std::shared_ptr<std::vector<Byte>> &message) = 0;
+  ISocket(const ISocket& source) = default;
+  ISocket(ISocket&& source) = default;
 
-  virtual bool BindAndListen(std::string address, int port) = 0;
+  auto operator=(const ISocket& source) -> ISocket& = default;
+  auto operator=(ISocket&& source) -> ISocket& = default;
 
-  virtual std::optional<SocketDescriptor> Accept() = 0;
-  virtual int ReceiveMessage(SocketDescriptor clint_socket,
-                             std::shared_ptr<std::vector<Byte>> message) = 0;
+  virtual auto Connect(std::string address, int port) -> bool = 0;
+  virtual auto SendMessage(const std::shared_ptr<std::vector<Byte>> &message,
+                           SocketDescriptor socket_addr) -> bool = 0;
+  virtual auto SendMessageAndCloseClient(const std::shared_ptr<std::vector<Byte>> &message,
+                                         SocketDescriptor socket_addr) -> bool = 0;
+  virtual auto SendMessage(const std::shared_ptr<std::vector<Byte>> &message) -> bool = 0;
+
+  virtual auto BindAndListen(std::string address, int port) -> bool = 0;
+
+  virtual auto Accept() -> std::optional<SocketDescriptor> = 0;
+  virtual auto ReceiveMessage(SocketDescriptor clint_socket,
+                             std::shared_ptr<std::vector<Byte>> message) -> size_t = 0;
 };
 
-} // SimpleHttpServer
+} // namespace simple_http_server
 
 #endif //SIMPLE_HTTP_SERVER_LIBS_ISOCKET_H_

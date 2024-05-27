@@ -1,6 +1,5 @@
 #include "Logger.h"
 
-#include <algorithm>
 #include <chrono>
 #include <ctime>
 #include <fstream>
@@ -15,7 +14,12 @@ void Logger::Log(const char *level, std::ostringstream &&message) {
   const time_t now = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
   logStream_ << std::put_time(std::localtime(&now), "%Y-%m-%d@%H:%M:%S") << " "
              << level << " "
-             << message.str() << std::endl;
+             << message.str() << "\n";
+  // TODO(dzen) think about flush()
 }
 
-} // simple_http_server
+void Logger::Flush() {
+  logStream_.flush();
+}
+
+} // namespace simple_http_server

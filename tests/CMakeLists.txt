@@ -7,6 +7,7 @@ endif ()
 FILE(GLOB_RECURSE test_sources CONFIGURE_DEPENDS
         *.cpp
 )
+
 foreach(test_source IN LISTS test_sources)
     string(REPLACE "/" ";" name_components ${test_source})
     list(GET name_components -1 name)
@@ -18,4 +19,3 @@ foreach(test_source IN LISTS test_sources)
 
     gtest_discover_tests(test_${name})
 endforeach()
-

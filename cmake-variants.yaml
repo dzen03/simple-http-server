@@ -26,3 +26,7 @@ buildType:
       short: UBSan
       long: Instrument with UndefinedBehaviourSanitizer
       buildType: UBSan
+    coverage:
+      short: Coverage
+      long: Build with coverage information
+      buildType: Coverage

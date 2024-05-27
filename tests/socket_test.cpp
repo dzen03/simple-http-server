@@ -1,13 +1,16 @@
-#include "SocketFactory.h"
 #include "ISocket.h"
+#include "SocketFactory.h"
+
 #include <thread>
+
 #include <gtest/gtest.h>
 
-using namespace simple_http_server;
+namespace simple_http_server {
 
+//NOLINTNEXTLINE(readability-function-cognitive-complexity)
 TEST(Socket, BasicPing) {
   std::string test_message_string = "test1234";
-  std::vector<ISocket::Byte> test_message(test_message_string.begin(), test_message_string.end());
+  const std::vector<ISocket::Byte> test_message(test_message_string.begin(), test_message_string.end());
 
   auto buffer = std::make_shared<ISocket::Message>(ISocket::Message(test_message.size()));
 
@@ -23,7 +26,7 @@ TEST(Socket, BasicPing) {
     EXPECT_TRUE(server->ReceiveMessage(client_sock.value(), buffer) > 0);
   });
 
-  // TODO think about race here
+  // TODO(dzen) think about race here
 
   EXPECT_TRUE(client->Connect("127.0.0.1", 12345));
   EXPECT_TRUE(client->SendMessage(std::make_shared<ISocket::Message>(test_message)));
@@ -32,3 +35,4 @@ TEST(Socket, BasicPing) {
 
   EXPECT_EQ(*buffer, test_message);
 }
+} // namespace simple_http_server

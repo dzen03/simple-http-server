@@ -1,3 +1,4 @@
+#include "ISocket.h"
 #include "SocketFactory.h"
 #include "util.h"
 
@@ -13,7 +14,7 @@
 
 namespace simple_http_server {
 
-std::unique_ptr<ISocket> SocketFactory::CreateSocket() {
+auto SocketFactory::CreateSocket() -> std::unique_ptr<ISocket> {
 #ifdef POSIX
   return std::make_unique<PosixSocket>();
 #elif defined WINDOWS
@@ -23,4 +24,4 @@ std::unique_ptr<ISocket> SocketFactory::CreateSocket() {
 #endif
 }
 
-} // simple_http_server
+} // namespace simple_http_server

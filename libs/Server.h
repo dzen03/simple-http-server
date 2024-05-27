@@ -37,16 +37,16 @@ class Server {
     std::string body;
   };
   Server();
-  void Start(const std::string &ip = "0.0.0.0", int port = 8080);
+  void Start(const std::string &ip_addr, int port);
   void Stop();
 
   void MapUrl(const std::string &path, const std::function<Server::Response(Server::Request)> &function);
 
-  static ArgumentsMap ParseArguments(const std::string &url_with_args);
-  static Request ParseRequest(const std::string &stringRequest);
-  static Response CreateResponse(int statusCode, const std::string &body = "", const std::string &statusMessage = "",
-                                 const HeadersMap &headers = HeadersMap());
-  static std::string DumpResponse(const Response &response);
+  static auto ParseArguments(const std::string &url_with_args) -> ArgumentsMap;
+  static auto ParseRequest(const std::string &stringRequest) -> Request;
+  static auto CreateResponse(int statusCode, const std::string &body = "", const std::string &statusMessage = "",
+                                 const HeadersMap &headers = HeadersMap()) -> Response;
+  static auto DumpResponse(const Response &response) -> std::string;
  private:
   std::unique_ptr<ISocket> socket_;
   inline static const std::unordered_map<int, std::string>
@@ -55,6 +55,6 @@ class Server {
   volatile std::atomic<bool> running_;
 };
 
-} // simple_http_server
+} // namespace simple_http_server
 
 #endif //SIMPLE_HTTP_SERVER_LIBS_SERVER_H_

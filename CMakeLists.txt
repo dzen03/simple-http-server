@@ -6,10 +6,10 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 
-if(CMAKE_C_COMPILER_ID STREQUAL GNU)
+if(CMAKE_CXX_COMPILER_ID STREQUAL GNU)
     set(CMAKE_CONFIGURATION_TYPES Debug Release ASan LSan UBSan)
-elseif(CMAKE_C_COMPILER_ID MATCHES Clang)
-    set(CMAKE_CONFIGURATION_TYPES Debug Release ASan LSan MSan UBSan)
+elseif(CMAKE_CXX_COMPILER_ID MATCHES Clang)
+    set(CMAKE_CONFIGURATION_TYPES Debug Release ASan LSan MSan UBSan Coverage)
 elseif(MSVC)
     set(CMAKE_CONFIGURATION_TYPES Debug Release ASan)
 endif()
@@ -24,6 +24,7 @@ if(CMAKE_C_COMPILER_ID STREQUAL GNU OR CMAKE_C_COMPILER_ID MATCHES Clang)
     set(CMAKE_C_FLAGS_LSAN  "${CMAKE_C_FLAGS_DEBUG} -fsanitize=leak")
     set(CMAKE_C_FLAGS_MSAN  "${CMAKE_C_FLAGS_DEBUG} -fsanitize=memory -fno-optimize-sibling-calls -fno-omit-frame-pointer")
     set(CMAKE_C_FLAGS_UBSAN "${CMAKE_C_FLAGS_DEBUG} -fsanitize=undefined")
+    set(CMAKE_C_FLAGS_COVERAGE "${CMAKE_C_FLAGS_DEBUG} --coverage")
 elseif(MSVC)
     set(CMAKE_C_FLAGS       "/std:c20 /W4 /WX")
     set(CMAKE_C_FLAGS_ASAN  "${CMAKE_C_FLAGS_DEBUG} /fsanitize=address")
@@ -33,19 +34,26 @@ endif()
 
 if(CMAKE_CXX_COMPILER_ID STREQUAL GNU OR CMAKE_CXX_COMPILER_ID MATCHES Clang)
     set(CMAKE_CXX_FLAGS       "-std=c++20 -pedantic -Wall -Werror -ggdb")
-    set(CMAKE_CXX_FLAGS_ASAN  "${CMAKE_C_FLAGS_DEBUG} -fsanitize=address -fno-optimize-sibling-calls -fno-omit-frame-pointer")
-    set(CMAKE_CXX_FLAGS_LSAN  "${CMAKE_C_FLAGS_DEBUG} -fsanitize=leak")
-    set(CMAKE_CXX_FLAGS_MSAN  "${CMAKE_C_FLAGS_DEBUG} -fsanitize=memory -fno-optimize-sibling-calls -fno-omit-frame-pointer")
-    set(CMAKE_CXX_FLAGS_UBSAN "${CMAKE_C_FLAGS_DEBUG} -fsanitize=undefined")
+    set(CMAKE_CXX_FLAGS_ASAN  "${CMAKE_CXX_FLAGS_DEBUG} -fsanitize=address -fno-optimize-sibling-calls -fno-omit-frame-pointer")
+    set(CMAKE_CXX_FLAGS_LSAN  "${CMAKE_CXX_FLAGS_DEBUG} -fsanitize=leak")
+    set(CMAKE_CXX_FLAGS_MSAN  "${CMAKE_CXX_FLAGS_DEBUG} -fsanitize=memory -fno-optimize-sibling-calls -fno-omit-frame-pointer")
+    set(CMAKE_CXX_FLAGS_UBSAN "${CMAKE_CXX_FLAGS_DEBUG} -fsanitize=undefined")
+    set(CMAKE_CXX_FLAGS_COVERAGE "${CMAKE_CXX_FLAGS_DEBUG} --coverage")
 elseif(MSVC)
     set(CMAKE_CXX_FLAGS       "/std:c++20 /W4 /WX")
-    set(CMAKE_CXX_FLAGS_ASAN  "${CMAKE_C_FLAGS_DEBUG} /fsanitize=address")
+    set(CMAKE_CXX_FLAGS_ASAN  "${CMAKE_CXX_FLAGS_DEBUG} /fsanitize=address")
     set(CMAKE_EXE_LINKER_FLAGS_ASAN "/debug /INCREMENTAL:NO")
 endif()
 
 find_program(CLANG_TIDY clang-tidy)
 message(STATUS "Clang-tidy: ${CLANG_TIDY}")
-if(False/*CLANG_TIDY*) # TODO enable (?) fucking clang tidy
+if(CLANG_TIDY)
+    set_property(
+            DIRECTORY
+            APPEND
+            PROPERTY CMAKE_CONFIGURE_DEPENDS clang-tidy-checks.txt
+    )
+
     file(STRINGS clang-tidy-checks.txt clang_tidy_checks)
     list(JOIN clang_tidy_checks "," clang_tidy_checks_str)
     set(CMAKE_C_CLANG_TIDY
@@ -71,6 +79,15 @@ endif()
 add_subdirectory(libs)
 include_directories(libs)
 
+# Function to disable clang-tidy on specified target
+function(disable_clang_tidy target)
+    if (TARGET ${target})
+        set_target_properties(${target} PROPERTIES CXX_CLANG_TIDY "")
+    else()
+        message(WARNING "Target ${target} not found!")
+    endif()
+endfunction()
+
 option(BUILD_TESTING "Enable tests" ON)
 if(BUILD_TESTING)
     enable_testing()
@@ -79,11 +96,18 @@ if(BUILD_TESTING)
     FetchContent_Declare(
             googletest
             URL https://github.com/google/googletest/archive/03597a01ee50ed33e9dfd640b249b4be3799d395.zip
+            DOWNLOAD_EXTRACT_TIMESTAMP NEW
     )
+
     # For Windows: Prevent overriding the parent project's compiler/linker settings
     set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
     FetchContent_MakeAvailable(googletest)
 
+    # Disable clang-tidy for GoogleTest targets
+    disable_clang_tidy(gtest)
+    disable_clang_tidy(gtest_main)
+    disable_clang_tidy(gmock)
+    disable_clang_tidy(gmock_main)
 
     add_subdirectory(tests)
 endif()
@@ -95,5 +119,3 @@ endif()
 
 add_executable(http-server main.cpp)
 target_link_libraries(http-server PRIVATE simple-http-server-sources)
-
-
