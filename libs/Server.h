@@ -17,7 +17,7 @@ class Server {
   using ArgumentsMap = std::unordered_map<std::string, std::string>;
 
   struct Request {
-    enum Type {
+    enum Type : std::uint8_t {
       GET,
       POST,
       // add here new types such as DELETE and etc

@@ -24,7 +24,7 @@ class WindowsSocket : public ISocket {
   bool BindAndListen(std::string address, int port) override;
   bool Connect(std::string address, int port) override;
 
-#undef SendMessage
+#undef SendMessage // cause of mingw
 
   bool SendMessage(const std::shared_ptr<std::vector<Byte>> &message) override;
   bool SendMessage(const std::shared_ptr<std::vector<Byte>> &message,

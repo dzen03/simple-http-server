@@ -13,7 +13,7 @@ namespace simple_http_server {
   X(ERROR, "ERROR") \
 
 #define X(level, name) level,
-enum Level {
+enum Level : std::uint8_t {
   LOGGER_LEVELS
 };
 #undef X
