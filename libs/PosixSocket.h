@@ -1,7 +1,7 @@
 #ifndef SIMPLE_HTTP_SERVER_LIBS_POSIXSOCKET_H_
 #define SIMPLE_HTTP_SERVER_LIBS_POSIXSOCKET_H_
 
-#include "util.h"
+#include "DefineSystem.h"
 
 #ifdef POSIX
 
@@ -27,20 +27,21 @@ class PosixSocket : public ISocket {
   auto operator=(const PosixSocket& source) -> PosixSocket& = default;
   auto operator=(PosixSocket&& source) -> PosixSocket& = default;
 
-  auto BindAndListen(std::string address, int port) -> bool override;
+  auto BindAndListen(const std::string &address, int port) -> bool override;
   auto Connect(std::string address, int port) -> bool override;
-  auto SendMessage(const std::shared_ptr<std::vector<Byte>> &message) -> bool override;
-  auto SendMessage(const std::shared_ptr<std::vector<Byte>> &message,
+  auto SendMessage(const std::unique_ptr<std::vector<Byte>> &message) -> bool override;
+  auto SendMessage(const std::unique_ptr<std::vector<Byte>> &message,
                    SocketDescriptor socket_addr) -> bool override;
-  auto SendMessageAndCloseClient(const std::shared_ptr<std::vector<Byte>> &message,
+  auto SendMessageAndCloseClient(const std::unique_ptr<std::vector<Byte>> &message,
                                  SocketDescriptor socket_addr) -> bool override;
-  auto Accept() -> std::optional<SocketDescriptor> override;
-  auto ReceiveMessage(SocketDescriptor clint_socket, std::shared_ptr<std::vector<Byte>> message) -> size_t override;
+  auto Accept() -> SocketDescriptor override;
+  auto ReceiveMessage(SocketDescriptor client_socket) -> std::unique_ptr<std::vector<Byte>> override;
+  auto ReceiveMessage() -> std::unique_ptr<std::vector<Byte>> override;
  private:
   SocketDescriptor socketDescriptor_;
   sockaddr_in address_{};
 
-  static auto CreateAddress(const std::string &address, int port) -> sockaddr_in;
+  static auto CreateAddress(const std::string &address, int port) noexcept -> sockaddr_in;
 };
 
 } // namespace simple_http_server

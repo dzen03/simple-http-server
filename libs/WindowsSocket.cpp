@@ -1,4 +1,4 @@
-#include "util.h"
+#include "DefineSystem.h"
 
 #ifdef WINDOWS
 
@@ -30,7 +30,7 @@ WindowsSocket::~WindowsSocket() {
   closesocket(socketDescriptor_);
 }
 
-bool WindowsSocket::BindAndListen(std::string address, int port) {
+bool WindowsSocket::BindAndListen(const std::string& address, int port) {
   address_ = CreateAddress(address, port);
 
   if (bind(socketDescriptor_, address_.ai_addr,
@@ -48,36 +48,44 @@ bool WindowsSocket::Connect(std::string address, int port) {
                   static_cast<int> (address_.ai_addrlen)) == 0);
 }
 
-bool WindowsSocket::SendMessage(const std::shared_ptr<std::vector<WindowsSocket::Byte>>& message) {
+bool WindowsSocket::SendMessage(const std::unique_ptr<std::vector<WindowsSocket::Byte>>& message) {
   return (send(socketDescriptor_, reinterpret_cast<const char *>(message->data()), message->size(), 0) != SOCKET_ERROR);
 }
 
-bool WindowsSocket::SendMessage(const std::shared_ptr<std::vector<WindowsSocket::Byte>>& message,
+bool WindowsSocket::SendMessage(const std::unique_ptr<std::vector<WindowsSocket::Byte>>& message,
                                 SocketDescriptor socket_addr) {
   return (send(socket_addr, reinterpret_cast<const char *>(message->data()), message->size(), 0) != -1);
 }
 
-bool WindowsSocket::SendMessageAndCloseClient(const std::shared_ptr<std::vector<WindowsSocket::Byte>>& message,
+bool WindowsSocket::SendMessageAndCloseClient(const std::unique_ptr<std::vector<WindowsSocket::Byte>>& message,
                                               SocketDescriptor socket_addr) {
   auto res = send(socket_addr, reinterpret_cast<const char *>(message->data()), message->size(), 0) != -1;
   shutdown(socket_addr, SD_SEND);
   return res;
 }
 
-std::optional<WindowsSocket::SocketDescriptor> WindowsSocket::Accept() {
+WindowsSocket::SocketDescriptor WindowsSocket::Accept() {
   auto client_addr = accept(socketDescriptor_, NULL, NULL);
   if (client_addr == INVALID_SOCKET) {
-    return std::nullopt;
+    throw std::runtime_error("could not accept socket");
   }
 
   return client_addr;
 }
 
-int WindowsSocket::ReceiveMessage(WindowsSocket::SocketDescriptor clint_socket,
-                                  std::shared_ptr<std::vector<WindowsSocket::Byte>> message) {
-  return recv(clint_socket, reinterpret_cast<char *>(message->data()), message->size(), 0);
+auto PosixSocket::ReceiveMessage(SocketDescriptor client_socket) -> std::pair<size_t, std::unique_ptr<std::vector<Byte>>> {
+  auto buffer = std::make_unique<std::vector<Byte>>(std::vector<Byte>(MAX_BUFFER_SIZE));
+
+  const auto& len = recv(client_socket, buffer->data(), buffer->size(), 0);
+
+  buffer->resize(len);
+
+  return buffer;
 }
 
+auto PosixSocket::ReceiveMessage() -> std::unique_ptr<std::vector<Byte>> {
+  return ReceiveMessage(socketDescriptor_);
+}
 
 addrinfo WindowsSocket::CreateAddress(const std::string &address, int port) {
   addrinfo hints {};

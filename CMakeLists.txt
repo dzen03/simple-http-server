@@ -45,9 +45,14 @@ elseif(MSVC)
     set(CMAKE_EXE_LINKER_FLAGS_ASAN "/debug /INCREMENTAL:NO")
 endif()
 
-find_program(CLANG_TIDY clang-tidy)
-message(STATUS "Clang-tidy: ${CLANG_TIDY}")
+option(USE_CLANG_TIDY "Enable clang tidy" ON)
+if(USE_CLANG_TIDY)
+    find_program(CLANG_TIDY clang-tidy)
+endif()
+
 if(CLANG_TIDY)
+    message(STATUS "Clang-tidy: ${CLANG_TIDY}")
+
     set_property(
             DIRECTORY
             APPEND
@@ -119,3 +124,5 @@ endif()
 
 add_executable(http-server main.cpp)
 target_link_libraries(http-server PRIVATE simple-http-server-sources)
+
+configure_file(index.html ${CMAKE_BINARY_DIR} COPYONLY) # only for example

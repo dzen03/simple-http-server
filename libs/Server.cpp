@@ -1,5 +1,8 @@
 #include "Logger.h"
+#include "Request.h"
+#include "Response.h"
 #include "Server.h"
+#include "Util.h"
 
 #include "SocketFactory.h"
 
@@ -20,39 +23,60 @@ void Server::Start(const std::string &ip_addr, int port) {
   running_ = true;
   socket_->BindAndListen(ip_addr, port);
 
-  static constexpr int MESSAGE_LENGTH = 1000;
-
-  auto buffer = std::make_shared<ISocket::Message>(ISocket::Message(MESSAGE_LENGTH));
-
   while (running_) {
-    auto client_sock = socket_->Accept();
+    try {
+      const auto &client_sock = socket_->Accept();
 
-    if (!client_sock) {
-      continue;
+      const auto &received = socket_->ReceiveMessage(client_sock);
+
+      const auto &string_request = std::string(received->begin(), received->end());
+
+      LOG(INFO, "got request " << NAMED_OUTPUT(string_request));
+
+      Request request(string_request);
+
+      Response response;
+
+      if (mappedUrls_.contains(request.GetUrl())) {
+        response = mappedUrls_[request.GetUrl()](request);
+      } else {
+        const auto &first_slash = request.GetUrl().find('/', 1);
+
+        const auto &url_start = request.GetUrl().substr(0, first_slash);
+
+        if (first_slash != std::string::npos && mappedDirectories_.contains(url_start)) {
+
+          auto path = mappedDirectories_.at(url_start);
+
+          size_t pos = 0;
+          size_t prev_pos = first_slash;
+          while ((pos = request.GetUrl().find('/', prev_pos + 1)) != std::string::npos) {
+            path /= request.GetUrl().substr(prev_pos + 1, pos - prev_pos);
+            prev_pos = pos;
+          }
+
+          path /= request.GetUrl().substr(prev_pos + 1);
+
+          if (std::filesystem::exists(path)) {
+            response = Render(path);
+          }
+        }
+      }
+
+      if (response.Empty()) {
+        static constexpr int NOT_FOUND_CODE = 404;
+        response = Response(NOT_FOUND_CODE);
+      }
+
+      const auto &string_response = response.Dump();
+
+      socket_->SendMessageAndCloseClient(std::make_unique<ISocket::Message>(
+                                             ISocket::Message(string_response.begin(), string_response.end())),
+                                         client_sock);
     }
-
-    const size_t received_len = socket_->ReceiveMessage(client_sock.value(), buffer);
-
-    std::string string_request = std::string(buffer->begin(), buffer->end());
-    string_request.resize(received_len);
-
-    LOG(INFO, "got request " << NAMED_OUTPUT(string_request));
-
-    const auto request = ParseRequest(string_request);
-
-    Response response;
-    if (mappedUrls_.contains(request.url)) {
-      response = mappedUrls_[request.url](request);
-    } else {
-      static constexpr int NOT_FOUND_CODE = 404;
-      response = CreateResponse(NOT_FOUND_CODE);
+    catch (const std::runtime_error &exception) {
+      LOG(ERROR, exception.what());
     }
-
-    auto string_response = DumpResponse(response);
-
-    socket_->SendMessageAndCloseClient(std::make_shared<ISocket::Message>(
-                                           ISocket::Message(string_response.begin(), string_response.end())),
-                                       client_sock.value());
   }
 }
 
@@ -60,134 +84,45 @@ void Server::Stop() {
   running_ = false;
 }
 
-void Server::MapUrl(const std::string &path, const std::function<Server::Response(Server::Request)> &function) {
+void Server::MapUrl(const std::string &path, const std::function<Response(Request)> &function) {
   if (mappedUrls_.contains(path)) {
     LOG(WARNING, "remapping url " << NAMED_OUTPUT(path));
   }
-  LOG(INFO, "mounting " << NAMED_OUTPUT(path));
+  LOG(INFO, "mapping URL " << NAMED_OUTPUT(path));
 
   mappedUrls_.insert({path, function});
 }
 
-auto Server::ParseArguments(const std::string &url_with_args) -> ArgumentsMap {
-  auto args_start = url_with_args.find('?');
+void Server::MapDirectory(const std::string &url, const std::filesystem::path &directory) {
+  LOG(INFO, "mapping directory " << url << " --> " << directory);
 
-  ArgumentsMap ret;
+  mappedDirectories_.insert({url, directory});
+}
 
-  auto next_arg = args_start;
+auto Server::Render(const std::filesystem::path &file, const std::string &content_type) -> Response {
+  const std::ifstream temp(file);
+  std::stringstream buffer;
+  buffer << temp.rdbuf(); // redundant copy
 
-  auto parse_argument = [&ret, &url_with_args](auto current_arg) mutable {
-    auto sep = url_with_args.find('=', current_arg);
-    auto next_arg = url_with_args.find('&', current_arg + 1);
+  static constexpr int OK_CODE = 200;
+  return Response(OK_CODE, buffer.str(), {{"Content-Type", content_type.empty() ? DeduceContentType(file) + "; charset = utf-8" : content_type}});
+}
 
-    if (sep == std::string::npos) {
-      LOG(WARNING, "incorrect arguments " << NAMED_OUTPUT(url_with_args));
-    } else {
-      auto key = url_with_args.substr(current_arg + 1, sep - current_arg - 1);
-      auto value = url_with_args.substr(sep + 1, next_arg - sep - 1);
-      ret.insert({key, value});
-    }
+auto Server::DeduceContentType(const std::filesystem::path &path) -> std::string {
+  const auto &ext = path.extension();
 
-    return next_arg;
+  static const std::unordered_map<std::string, std::string> ext_to_mimo {
+      {".html", "text/html"},
+      // TODO(all) add your own types here
   };
 
-  while (next_arg != std::string::npos) {
-    next_arg = parse_argument(next_arg);
+  if (ext_to_mimo.contains(ext)) {
+    return ext_to_mimo.at(ext);
   }
 
-  return ret;
+  // default as of https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/MIME_types/Common_types
+  return "application/octet-stream";
 }
 
-auto Server::ParseRequest(const std::string &stringRequest) -> Request {
-  std::istringstream req(stringRequest);
-
-  Request ret;
-
-  std::string type;
-  req >> type;
-
-  if (type == "GET") {
-    ret.type = Request::Type::GET;
-  }
-  else if (type == "POST") {
-    ret.type = Request::Type::POST;
-  }
-  else {
-    LOG(WARNING, "got unknown request type: " << stringRequest);
-    ret.type = Request::Type::UNKNOWN;
-  }
-
-  std::string url_with_args;
-
-  req >> url_with_args >> ret.httpVersion;
-
-  ret.url = url_with_args.substr(0, url_with_args.find('?'));
-  ret.arguments = ParseArguments(url_with_args);
-
-  std::string header_line;
-
-  req.ignore(2, '\n'); // skip /r/n after "operator>>" (because they stay)
-
-  while (std::getline(req, header_line, '\n')) {
-    if (header_line.ends_with('\r')) {
-      header_line.pop_back();
-    }
-
-    if (header_line.empty()) {
-      break;
-    }
-
-    auto colon = header_line.find(':');
-
-    if (colon == std::string::npos) {
-      LOG(WARNING, "got incorrect header " << NAMED_OUTPUT(header_line));
-      continue;
-    }
-
-    const auto key = header_line.substr(0, colon);
-
-    const auto value = header_line.substr(header_line.find_first_not_of(" \n\r\t", colon + 1));
-
-    ret.headers.insert({key, value});
-  }
-
-  req >> ret.body;
-
-  return ret;
-}
-
-auto Server::CreateResponse(int statusCode, const std::string &body, const std::string &statusMessage,
-                                        const HeadersMap &headers) -> Response {
-  Response response = {.httpVersion = "HTTP/1.1",
-                       .statusCode = statusCode,
-                       .statusMessage = (statusMessage.empty() ? defaultMessages_.at(statusCode) : statusMessage),
-                       .headers = headers,
-                       .body = body};
-
-  if (!headers.contains("Content-Length")) {
-    response.headers.insert({"Content-Length", std::to_string(response.body.length())});
-  }
-
-  return response;
-}
-
-auto Server::DumpResponse(const Server::Response &response) -> std::string {
-  std::ostringstream string_response;
-
-  string_response << response.httpVersion << " " << response.statusCode << " " << response.statusMessage << "\r\n";
-
-  for (const auto &header : response.headers) {
-    string_response << header.first << ": " << header.second << "\r\n";
-  }
-
-  if (response.headers.empty()) {
-    string_response << "\r\n";
-  }
-
-  string_response << "\r\n"
-                  << response.body;
-
-  return string_response.str();
-}
 
 } // namespace simple_http_server

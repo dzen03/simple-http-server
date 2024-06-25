@@ -1,7 +1,7 @@
 #ifndef SIMPLE_HTTP_SERVER_LIBS_POSIXSOCKET_H_
 #define SIMPLE_HTTP_SERVER_LIBS_POSIXSOCKET_H_
 
-#include "util.h"
+#include "DefineSystem.h"
 
 #ifdef WINDOWS
 
@@ -21,18 +21,20 @@ class WindowsSocket : public ISocket {
   WindowsSocket();
   ~WindowsSocket() override;
 
-  bool BindAndListen(std::string address, int port) override;
+  bool BindAndListen(const std::string& address, int port) override;
   bool Connect(std::string address, int port) override;
 
 #undef SendMessage // cause of mingw
 
-  bool SendMessage(const std::shared_ptr<std::vector<Byte>> &message) override;
-  bool SendMessage(const std::shared_ptr<std::vector<Byte>> &message,
+  bool SendMessage(const std::unique_ptr<std::vector<Byte>> &message) override;
+  bool SendMessage(const std::unique_ptr<std::vector<Byte>> &message,
                    SocketDescriptor socket_addr) override;
-  bool SendMessageAndCloseClient(const std::shared_ptr<std::vector<Byte>> &message,
+  bool SendMessageAndCloseClient(const std::unique_ptr<std::vector<Byte>> &message,
                                  SocketDescriptor socket_addr) override;
-  std::optional<SocketDescriptor> Accept() override;
-  int ReceiveMessage(SocketDescriptor clint_socket, std::shared_ptr<std::vector<Byte>> message) override;
+  SocketDescriptor Accept() override;
+
+  auto ReceiveMessage() -> std::unique_ptr<std::vector<Byte>> override;
+  auto ReceiveMessage(SocketDescriptor client_socket) -> std::unique_ptr<std::vector<Byte>> override;
  private:
   SOCKET socketDescriptor_;
   addrinfo address_;

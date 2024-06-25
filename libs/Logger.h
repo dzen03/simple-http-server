@@ -2,6 +2,7 @@
 #define SIMPLE_HTTP_SERVER_LIBS_LOGGER_H_
 
 #include <fstream>
+#include <sstream>
 #include <vector>
 
 namespace simple_http_server {
@@ -25,7 +26,7 @@ enum Level : std::uint8_t {
 
 class Logger {
  public:
-  static constexpr auto logFilename = "server.log";
+  static constexpr auto logFilename = "server.log"; // TODO(dzen) rewrite this
 
   static void Log(const char *level, std::ostringstream &&message);
   static void Flush();

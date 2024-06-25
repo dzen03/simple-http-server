@@ -1,85 +1,58 @@
+#include "ISocket.h"
 #include "Server.h"
+#include "SocketFactory.h"
 
 #include <gtest/gtest.h>
 
+#include <random>
+#include <thread>
+
 namespace simple_http_server {
 
-TEST(Server, CreateAndDumpResponseWithHeaders) {
-  std::ostringstream canon_response;
+TEST(Server, MapURL) {
 
-  canon_response << "HTTP/1.1 200 OK" << "\r\n"
-                 << "Content-Length: 11" << "\r\n"
-                 << "\r\n"
-                 << "Hello world";
+  std::random_device dev;
+  std::mt19937 rng(dev());
+  std::uniform_int_distribution<std::mt19937::result_type> dist(10000,65535); // NOLINT
 
-  //NOLINTNEXTLINE(readability-magic-numbers)
-  auto response = Server::DumpResponse(Server::CreateResponse(200, "Hello world", "", {{"Content-Length", "11"}}));
+  const int PORT = static_cast<int>(dist(rng)); // TODO(dzen) use kernel to get random port
+  // "STATIC" port isn't working properly
 
-  EXPECT_EQ(canon_response.str(), response);
+  Server server;
+
+  std::thread server_thread([&server, &PORT]() {
+    server.MapUrl("/", [](const simple_http_server::Request&){
+      static constexpr int OK_CODE = 200;
+      return simple_http_server::Response(OK_CODE, "test1234片仮名");
+    });
+
+    server.Start("127.0.0.1", PORT); //NOLINT
+  });
+
+
+  sleep(2); // NOLINT
+  server.Stop();
+
+  auto client = SocketFactory::CreateSocket();
+
+  const auto& connected = client->Connect("127.0.0.1", PORT); // NOLINT
+
+  if (!connected){
+    server_thread.join();
+    ASSERT_TRUE(false);
+  }
+
+  const std::string& request = "GET / HTTP/1.1\r\n\r\n";
+
+  EXPECT_TRUE(client->SendMessage(std::make_unique<ISocket::Message>(request.begin(), request.end())));
+
+  const auto &resp = client->ReceiveMessage();
+
+  EXPECT_FALSE(resp->empty());
+
+  EXPECT_EQ(std::string(resp->begin(), resp->end()), "HTTP/1.1 200 OK\r\nContent-Length: 17\r\n\r\ntest1234片仮名");
+
+  server_thread.join();
 }
 
-TEST(Server, CreateAndDumpResponseWithoutHeaders) {
-  std::ostringstream canon_response;
-
-  canon_response << "HTTP/1.1 200 OK" << "\r\n"
-                 << "Content-Length: 11" << "\r\n"
-                 << "\r\n"
-                 << "Hello world";
-
-  //NOLINTNEXTLINE(readability-magic-numbers)
-  auto response = Server::DumpResponse(Server::CreateResponse(200, "Hello world"));
-
-  EXPECT_EQ(canon_response.str(), response);
-}
-
-TEST(Server, ParseRequest) {
-  const std::string request = "POST /home.html HTTP/1.1\r\n"
-                              "Host: developer.mozilla.org\r\n"
-                              "Content-Type: application/x-www-form-urlencoded\r\n"
-                              "Content-Length: 27\r\n"
-                              "\r\n"
-                              "field1=value1&field2=value2";
-
-  auto parsed = Server::ParseRequest(request);
-
-  const Server::Request canonical = {.type=Server::Request::POST,
-                                     .url="/home.html",
-                                     .arguments=Server::ArgumentsMap(),
-                                     .httpVersion="HTTP/1.1",
-                                     .headers={{"Host", "developer.mozilla.org"},
-                                               {"Content-Type", "application/x-www-form-urlencoded"},
-                                               {"Content-Length", "27"}},
-                                     .body="field1=value1&field2=value2"};
-
-  EXPECT_EQ(canonical.type, parsed.type);
-  EXPECT_EQ(canonical.url, parsed.url);
-  EXPECT_EQ(canonical.arguments, parsed.arguments);
-  EXPECT_EQ(canonical.httpVersion, parsed.httpVersion);
-  EXPECT_EQ(canonical.headers, parsed.headers);
-  EXPECT_EQ(canonical.body, parsed.body);
-}
-
-TEST(Server, ParseRequestWithArguments) {
-  const std::string request = "GET /home.html?a=b&c=d HTTP/1.1\r\n"
-                              "Host: developer.mozilla.org\r\n"
-                              "User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.9; rv:50.0) Gecko/20100101 Firefox/50.0\r\n"
-                              "\r\n";
-
-  auto parsed = Server::ParseRequest(request);
-
-  const Server::Request canonical = {.type=Server::Request::GET,
-                                     .url="/home.html",
-                                     .arguments={{"a", "b"}, {"c", "d"}},
-                                     .httpVersion="HTTP/1.1",
-                                     .headers={{"Host", "developer.mozilla.org"},
-                                               {"User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.9; rv:50.0) Gecko/20100101 Firefox/50.0"}},
-                                     .body=""};
-
-  EXPECT_EQ(canonical.type, parsed.type);
-  EXPECT_EQ(canonical.url, parsed.url);
-  EXPECT_EQ(canonical.arguments, parsed.arguments);
-  EXPECT_EQ(canonical.httpVersion, parsed.httpVersion);
-  EXPECT_EQ(canonical.headers, parsed.headers);
-  EXPECT_EQ(canonical.body, parsed.body);
-}
 } // namespace simple_http_server

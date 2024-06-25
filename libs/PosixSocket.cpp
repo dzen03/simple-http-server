@@ -1,4 +1,4 @@
-#include "util.h"
+#include "DefineSystem.h"
 
 #ifdef POSIX
 
@@ -23,7 +23,7 @@ PosixSocket::~PosixSocket() {
   close(socketDescriptor_);
 }
 
-auto PosixSocket::BindAndListen(std::string address, int port) -> bool {
+auto PosixSocket::BindAndListen(const std::string& address, int port) -> bool {
   address_ = CreateAddress(address, port);
 
   if (bind(socketDescriptor_, reinterpret_cast<sockaddr *> (&address_),
@@ -41,40 +41,48 @@ auto PosixSocket::Connect(std::string address, int port) -> bool {
                   sizeof(address_)) == 0);
 }
 
-auto PosixSocket::SendMessage(const std::shared_ptr<std::vector<PosixSocket::Byte>> &message) -> bool {
+auto PosixSocket::SendMessage(const std::unique_ptr<std::vector<PosixSocket::Byte>> &message) -> bool {
   return (send(socketDescriptor_, message->data(), message->size(), 0) != -1);
 }
 
-auto PosixSocket::SendMessage(const std::shared_ptr<std::vector<PosixSocket::Byte>> &message,
+auto PosixSocket::SendMessage(const std::unique_ptr<std::vector<PosixSocket::Byte>> &message,
                               SocketDescriptor socket_addr) -> bool {
   return (send(socket_addr, message->data(), message->size(), 0) != -1);
 }
 
-auto PosixSocket::SendMessageAndCloseClient(const std::shared_ptr<std::vector<PosixSocket::Byte>> &message,
+auto PosixSocket::SendMessageAndCloseClient(const std::unique_ptr<std::vector<PosixSocket::Byte>> &message,
                                             SocketDescriptor socket_addr) -> bool {
   auto res = send(socket_addr, message->data(), message->size(), 0) != -1;
   close(socket_addr);
   return res;
 }
 
-auto PosixSocket::Accept() -> std::optional<SocketDescriptor> {
+auto PosixSocket::Accept() -> SocketDescriptor {
   socklen_t address_size = sizeof(address_);
 
   PosixSocket::SocketDescriptor client_addr = -1;
   if (client_addr = accept(socketDescriptor_, reinterpret_cast<sockaddr *>(&address_),
                            &address_size); client_addr == -1) {
-    return std::nullopt;
+    throw std::runtime_error("could not accept socket");
   }
 
   return client_addr;
 }
 
-auto PosixSocket::ReceiveMessage(PosixSocket::SocketDescriptor clint_socket,
-                                std::shared_ptr<std::vector<PosixSocket::Byte>> message) -> size_t {
-  return recv(clint_socket, message->data(), message->size(), 0);
+auto PosixSocket::ReceiveMessage(SocketDescriptor client_socket) -> std::unique_ptr<std::vector<Byte>> {
+  auto buffer = std::make_unique<std::vector<Byte>>(std::vector<Byte>(MAX_BUFFER_SIZE));
+
+  const auto& len = recv(client_socket, buffer->data(), buffer->size(), 0);
+  buffer->resize(len);
+
+  return buffer;
 }
 
-auto PosixSocket::CreateAddress(const std::string &address, int port) -> sockaddr_in {
+auto PosixSocket::ReceiveMessage() -> std::unique_ptr<std::vector<Byte>> {
+  return ReceiveMessage(socketDescriptor_);
+}
+
+auto PosixSocket::CreateAddress(const std::string &address, int port) noexcept -> sockaddr_in {
   sockaddr_in res{};
   res.sin_family = AF_INET;
   res.sin_port = htons(port);
