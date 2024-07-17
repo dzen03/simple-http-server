@@ -3,6 +3,7 @@
 
 #include "Util.h"
 
+#include <cstdint>
 #include <string>
 
 namespace simple_http_server {

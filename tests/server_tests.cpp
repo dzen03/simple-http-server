@@ -29,8 +29,7 @@ TEST(Server, MapURL) {
     server.Start("127.0.0.1", PORT); //NOLINT
   });
 
-
-  sleep(2); // NOLINT
+  std::this_thread::sleep_for(std::chrono::seconds(2)); // NOLINT
   server.Stop();
 
   auto client = SocketFactory::CreateSocket();

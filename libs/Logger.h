@@ -1,6 +1,7 @@
 #ifndef SIMPLE_HTTP_SERVER_LIBS_LOGGER_H_
 #define SIMPLE_HTTP_SERVER_LIBS_LOGGER_H_
 
+#include <cstdint>
 #include <fstream>
 #include <sstream>
 #include <vector>

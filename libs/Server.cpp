@@ -8,6 +8,7 @@
 
 #include <sstream>
 #include <string>
+#include <unordered_map>
 
 namespace simple_http_server {
 
@@ -116,8 +117,8 @@ auto Server::DeduceContentType(const std::filesystem::path &path) -> std::string
       // TODO(all) add your own types here
   };
 
-  if (ext_to_mimo.contains(ext)) {
-    return ext_to_mimo.at(ext);
+  if (ext_to_mimo.contains(ext.string())) {
+    return ext_to_mimo.at(ext.string());
   }
 
   // default as of https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/MIME_types/Common_types

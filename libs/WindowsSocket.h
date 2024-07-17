@@ -7,12 +7,12 @@
 
 #include "ISocket.h"
 
-#include <winsock2.h>
-#include <windows.h>
-#include <ws2tcpip.h>
 #include <memory>
 #include <string>
 #include <vector>
+#include <winsock2.h> // NOLINT(llvm-include-order) cause of "Please include winsock2.h before windows.h"
+#include <windows.h>
+#include <ws2tcpip.h>
 
 namespace simple_http_server {
 
@@ -21,17 +21,17 @@ class WindowsSocket : public ISocket {
   WindowsSocket();
   ~WindowsSocket() override;
 
-  bool BindAndListen(const std::string& address, int port) override;
-  bool Connect(std::string address, int port) override;
+  auto BindAndListen(const std::string& address, int port) -> bool override;
+  auto Connect(std::string address, int port) -> bool override;
 
 #undef SendMessage // cause of mingw
 
-  bool SendMessage(const std::unique_ptr<std::vector<Byte>> &message) override;
-  bool SendMessage(const std::unique_ptr<std::vector<Byte>> &message,
-                   SocketDescriptor socket_addr) override;
-  bool SendMessageAndCloseClient(const std::unique_ptr<std::vector<Byte>> &message,
-                                 SocketDescriptor socket_addr) override;
-  SocketDescriptor Accept() override;
+  auto SendMessage(const std::unique_ptr<std::vector<Byte>> &message) -> bool override;
+  auto SendMessage(const std::unique_ptr<std::vector<Byte>> &message,
+                   SocketDescriptor socket_addr) -> bool override;
+  auto SendMessageAndCloseClient(const std::unique_ptr<std::vector<Byte>> &message,
+                                 SocketDescriptor socket_addr) -> bool override;
+  auto Accept() -> SocketDescriptor override;
 
   auto ReceiveMessage() -> std::unique_ptr<std::vector<Byte>> override;
   auto ReceiveMessage(SocketDescriptor client_socket) -> std::unique_ptr<std::vector<Byte>> override;
@@ -43,10 +43,10 @@ class WindowsSocket : public ISocket {
   inline static bool wsaStarted_ = false;
   inline static std::mutex wsaLock_ {};
 
-  static addrinfo CreateAddress(const std::string &address, int port);
+  static auto CreateAddress(const std::string &address, int port) -> addrinfo;
 };
 
-} // SimpleHttpServer
+} // namespace simple_http_server
 
 #endif // WINDOWS
 

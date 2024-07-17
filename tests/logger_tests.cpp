@@ -29,8 +29,6 @@ TEST(Logger, MainTest) {
     EXPECT_EQ(level, Logger::level_name[line.first]);
     EXPECT_EQ(messageKey, "line.second:");
     EXPECT_EQ(messageValue, line.second);
-
-    Logger::level_name[INFO];
   }
 }
 } // namespace simple_http_server

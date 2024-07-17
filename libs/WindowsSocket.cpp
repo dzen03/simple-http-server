@@ -30,7 +30,7 @@ WindowsSocket::~WindowsSocket() {
   closesocket(socketDescriptor_);
 }
 
-bool WindowsSocket::BindAndListen(const std::string& address, int port) {
+auto WindowsSocket::BindAndListen(const std::string& address, int port) -> bool {
   address_ = CreateAddress(address, port);
 
   if (bind(socketDescriptor_, address_.ai_addr,
@@ -41,53 +41,56 @@ bool WindowsSocket::BindAndListen(const std::string& address, int port) {
   return (listen(socketDescriptor_, 1) != SOCKET_ERROR);
 }
 
-bool WindowsSocket::Connect(std::string address, int port) {
+auto WindowsSocket::Connect(std::string address, int port) -> bool {
   address_ = CreateAddress(address, port);
 
   return (connect(socketDescriptor_, address_.ai_addr,
                   static_cast<int> (address_.ai_addrlen)) == 0);
 }
 
-bool WindowsSocket::SendMessage(const std::unique_ptr<std::vector<WindowsSocket::Byte>>& message) {
-  return (send(socketDescriptor_, reinterpret_cast<const char *>(message->data()), message->size(), 0) != SOCKET_ERROR);
+auto WindowsSocket::SendMessage(const std::unique_ptr<std::vector<WindowsSocket::Byte>>& message) -> bool {
+  return (send(socketDescriptor_, reinterpret_cast<const char *>(message->data()),
+               static_cast<int>(message->size()), 0) != SOCKET_ERROR);
 }
 
-bool WindowsSocket::SendMessage(const std::unique_ptr<std::vector<WindowsSocket::Byte>>& message,
-                                SocketDescriptor socket_addr) {
-  return (send(socket_addr, reinterpret_cast<const char *>(message->data()), message->size(), 0) != -1);
+auto WindowsSocket::SendMessage(const std::unique_ptr<std::vector<WindowsSocket::Byte>>& message,
+                                SocketDescriptor socket_addr) -> bool {
+  return (send(socket_addr, reinterpret_cast<const char *>(message->data()),
+               static_cast<int>(message->size()), 0) != -1);
 }
 
-bool WindowsSocket::SendMessageAndCloseClient(const std::unique_ptr<std::vector<WindowsSocket::Byte>>& message,
-                                              SocketDescriptor socket_addr) {
-  auto res = send(socket_addr, reinterpret_cast<const char *>(message->data()), message->size(), 0) != -1;
+auto WindowsSocket::SendMessageAndCloseClient(const std::unique_ptr<std::vector<WindowsSocket::Byte>>& message,
+                                              SocketDescriptor socket_addr) -> bool {
+  auto res = send(socket_addr, reinterpret_cast<const char *>(message->data()),
+                  static_cast<int>(message->size()), 0) != -1;
   shutdown(socket_addr, SD_SEND);
   return res;
 }
 
-WindowsSocket::SocketDescriptor WindowsSocket::Accept() {
-  auto client_addr = accept(socketDescriptor_, NULL, NULL);
+auto WindowsSocket::Accept() -> WindowsSocket::SocketDescriptor {
+  auto client_addr = accept(socketDescriptor_, nullptr, nullptr);
   if (client_addr == INVALID_SOCKET) {
     throw std::runtime_error("could not accept socket");
   }
 
-  return client_addr;
+  return static_cast<int>(client_addr);
 }
 
-auto PosixSocket::ReceiveMessage(SocketDescriptor client_socket) -> std::pair<size_t, std::unique_ptr<std::vector<Byte>>> {
+auto WindowsSocket::ReceiveMessage(SocketDescriptor client_socket) -> std::unique_ptr<std::vector<Byte>> {
   auto buffer = std::make_unique<std::vector<Byte>>(std::vector<Byte>(MAX_BUFFER_SIZE));
 
-  const auto& len = recv(client_socket, buffer->data(), buffer->size(), 0);
-
+  const auto& len = recv(client_socket, reinterpret_cast<char *>(buffer->data()),
+                         static_cast<int>(buffer->size()), 0);
   buffer->resize(len);
 
   return buffer;
 }
 
-auto PosixSocket::ReceiveMessage() -> std::unique_ptr<std::vector<Byte>> {
-  return ReceiveMessage(socketDescriptor_);
+auto WindowsSocket::ReceiveMessage() -> std::unique_ptr<std::vector<Byte>> {
+  return ReceiveMessage(static_cast<int>(socketDescriptor_));
 }
 
-addrinfo WindowsSocket::CreateAddress(const std::string &address, int port) {
+auto WindowsSocket::CreateAddress(const std::string &address, int port) -> addrinfo {
   addrinfo hints {};
   hints.ai_family   = AF_INET;
   hints.ai_socktype = SOCK_STREAM;
@@ -102,6 +105,6 @@ addrinfo WindowsSocket::CreateAddress(const std::string &address, int port) {
   return *p_res;
 }
 
-} // SimpleHttpServer
+} // namespace simple_http_server
 
 #endif //WINDOWS
