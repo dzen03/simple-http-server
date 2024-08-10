@@ -34,7 +34,7 @@ void Server::Start(const std::string &ip_addr, int port) {
 
       LOG(INFO, "got request " << NAMED_OUTPUT(string_request));
 
-      Request request(string_request);
+      const Request request(string_request);
 
       Response response;
 
@@ -112,13 +112,16 @@ auto Server::Render(const std::filesystem::path &file, const std::string &conten
 auto Server::DeduceContentType(const std::filesystem::path &path) -> std::string {
   const auto &ext = path.extension();
 
-  static const std::unordered_map<std::string, std::string> ext_to_mimo {
+  static const std::unordered_map<std::string, std::string> ext_to_mime {
       {".html", "text/html"},
+      {".svg", "image/svg+xml"},
+      {".jpg", "image/jpeg"},
+      {".jpeg", "image/jpeg"},
       // TODO(all) add your own types here
   };
 
-  if (ext_to_mimo.contains(ext.string())) {
-    return ext_to_mimo.at(ext.string());
+  if (ext_to_mime.contains(ext.string())) {
+    return ext_to_mime.at(ext.string());
   }
 
   // default as of https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/MIME_types/Common_types

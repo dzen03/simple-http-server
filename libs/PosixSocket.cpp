@@ -31,7 +31,8 @@ auto PosixSocket::BindAndListen(const std::string& address, int port) -> bool {
     return false;
   }
 
-  return (listen(socketDescriptor_, 1) == 0);
+  static constexpr int backlog = 5;
+  return (listen(socketDescriptor_, backlog) == 0);
 }
 
 auto PosixSocket::Connect(std::string address, int port) -> bool {

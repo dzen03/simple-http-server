@@ -15,6 +15,7 @@ void Logger::Log(const char *level, std::ostringstream &&message) {
   logStream_ << std::put_time(std::localtime(&now), "%Y-%m-%d@%H:%M:%S") << " "
              << level << " "
              << message.str() << "\n";
+  Flush();
   // TODO(dzen) think about flush()
 }
 

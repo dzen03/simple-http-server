@@ -32,22 +32,22 @@ class Request {
   std::string body_;
 
  public:
-  auto GetType() -> decltype(type_) {
+  [[nodiscard]] auto GetType() const -> decltype(type_) {
     return type_;
   }
-  auto GetUrl() -> decltype(url_) {
+  [[nodiscard]] auto GetUrl() const -> decltype(url_) {
     return url_;
   }
-  auto GetArguments() -> decltype(arguments_) {
+  [[nodiscard]] auto GetArguments() const -> decltype(arguments_) {
     return arguments_;
   }
-  auto GetHttpVersion() -> decltype(httpVersion_) {
+  [[nodiscard]] auto GetHttpVersion() const -> decltype(httpVersion_) {
     return httpVersion_;
   }
-  auto GetHeaders() -> decltype(headers_) {
+  [[nodiscard]] auto GetHeaders() const -> decltype(headers_) {
     return headers_;
   }
-  auto GetBody() -> decltype(body_) {
+  [[nodiscard]] auto GetBody() const -> decltype(body_) {
     return body_;
   }
 
