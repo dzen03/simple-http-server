@@ -5,7 +5,7 @@
 #include <gtest/gtest.h>
 
 namespace simple_http_server {
-TEST(Request, ParseRequest) {
+TEST(Request, Parse) {
   const auto& request = "POST /home.html HTTP/1.1\r\n"
                               "Host: developer.mozilla.org\r\n"
                               "Content-Type: application/x-www-form-urlencoded\r\n"
@@ -25,7 +25,7 @@ TEST(Request, ParseRequest) {
   EXPECT_EQ(parsed.GetBody(), "field1=value1&field2=value2");
 }
 
-TEST(Request, ParseRequestWithArguments) {
+TEST(Request, ParseWithArguments) {
   const auto& request = "GET /home.html?a=b&c=d HTTP/1.1\r\n"
                               "Host: developer.mozilla.org\r\n"
                               "User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.9; rv:50.0) Gecko/20100101 Firefox/50.0\r\n"
@@ -41,4 +41,21 @@ TEST(Request, ParseRequestWithArguments) {
                                              {"User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.9; rv:50.0) Gecko/20100101 Firefox/50.0"}}));
   EXPECT_EQ(parsed.GetBody(), "");
 }
+
+TEST(Request, ParseInvalidHeaders) {
+  const auto& request = "CONNECT google.com HTTP/1.1\r\n"
+                        "Host:\r\n"
+                        "User-Agent: \r\n"
+                        "\r\n";
+
+  auto parsed = Request(request);
+
+  EXPECT_EQ(parsed.GetType(), Request::UNKNOWN);
+  EXPECT_EQ(parsed.GetUrl(), "google.com");
+  EXPECT_EQ(parsed.GetArguments(), ArgumentsMap({}));
+  EXPECT_EQ(parsed.GetHttpVersion(), "HTTP/1.1");
+  EXPECT_EQ(parsed.GetHeaders(), HeadersMap({}));
+  EXPECT_EQ(parsed.GetBody(), "");
+}
+
 } // namespace simple_http_server

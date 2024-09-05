@@ -16,7 +16,8 @@ void Logger::Log(const char *level, std::ostringstream &&message) {
              << level << " "
              << message.str() << "\n";
   Flush();
-  // TODO(dzen) think about flush()
+  // TODO(dzen) think about flush(); probably should use Flush() each N lines
+  // TODO(dzen) add log rotation
 }
 
 void Logger::Flush() {

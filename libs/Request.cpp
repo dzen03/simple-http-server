@@ -61,7 +61,7 @@ Request::Request(const std::string &stringRequest) {
 
   std::string header_line;
 
-  req.ignore(2, '\n'); // skip /r/n after "operator>>" (because they stay)
+  req.ignore(2, '\n'); // skip \r\n after "operator>>" (because they stay)
 
   while (std::getline(req, header_line, '\n')) {
     if (header_line.ends_with('\r')) {
@@ -74,14 +74,16 @@ Request::Request(const std::string &stringRequest) {
 
     auto colon = header_line.find(':');
 
-    if (colon == std::string::npos) {
+    const auto value_start_pos = header_line.find_first_not_of(" \n\r\t", colon + 1);
+
+    if (colon == std::string::npos || value_start_pos == std::string::npos) {
       LOG(WARNING, "got incorrect header " << NAMED_OUTPUT(header_line));
       continue;
     }
 
-    const auto key = header_line.substr(0, colon);
+    const auto& key = header_line.substr(0, colon);
 
-    const auto value = header_line.substr(header_line.find_first_not_of(" \n\r\t", colon + 1));
+    const auto& value = header_line.substr(value_start_pos);
 
     headers_.insert({key, value});
   }
