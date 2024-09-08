@@ -22,7 +22,7 @@ auto Request::ParseArguments(const std::string &url_with_args) -> ArgumentsMap {
     } else {
       auto key = url_with_args.substr(current_arg + 1, sep - current_arg - 1);
       auto value = url_with_args.substr(sep + 1, next_arg - sep - 1);
-      ret.insert({key, value});
+      ret.emplace(key, value);
     }
 
     return next_arg;
@@ -85,7 +85,7 @@ Request::Request(const std::string &stringRequest) {
 
     const auto& value = header_line.substr(value_start_pos);
 
-    headers_.insert({key, value});
+    headers_.emplace(key, value);
   }
 
   req >> body_;

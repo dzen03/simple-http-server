@@ -1,10 +1,12 @@
 name: CTests
 
+# TODO add cache (https://github.com/actions/cache) to cache gtest deps
+
 on: [push, workflow_dispatch]
 
 jobs:
-  test-gtest:
-    runs-on: self-hosted
+  test-gtest-linux:
+    runs-on: [self-hosted, linux]
 
     defaults:
       run:
@@ -14,7 +16,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Configure CMake
-        run: cmake -S $GITHUB_WORKSPACE/ -B ${{runner.workspace}}/build
+        run: cmake -S ${{github.workspace}}/ -B ${{runner.workspace}}/build
 
       - name: Build
         working-directory: ${{runner.workspace}}/build
@@ -30,3 +32,30 @@ jobs:
         with:
           name: test_results_xml
           path: ${{runner.workspace}}/build/test-results/**/*.xml
+  test-gtest-windows:
+    runs-on: [self-hosted, windows]
+
+    defaults:
+      run:
+        shell: pwsh
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure CMake
+        run: cmake -S ${{github.workspace}}\ -B ${{runner.workspace}}\build -G "Ninja"
+
+      - name: Build
+        working-directory: ${{runner.workspace}}\build
+        run: cmake --build . -j3
+
+      - name: Test
+        working-directory: ${{runner.workspace}}\build
+        run: $env:GTEST_OUTPUT="xml:test-results\"; $env:GTEST_COLOR="1"; ctest -V
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: test_results_xml
+          path: ${{runner.workspace}}\build\test-results\**\*.xml

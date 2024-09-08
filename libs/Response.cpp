@@ -14,7 +14,7 @@ Response::Response(int statusCode, const std::string &body, const HeadersMap &he
   body_ = body;
 
   if (!headers_.contains("Content-Length")) {
-    headers_.insert({"Content-Length", std::to_string(body_.length())});
+    headers_.emplace("Content-Length", std::to_string(body_.length()));
   }
 }
 
