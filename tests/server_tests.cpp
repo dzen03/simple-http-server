@@ -49,7 +49,7 @@ TEST(Server, MapURL) {
 
   EXPECT_FALSE(resp->empty());
 
-  EXPECT_EQ(std::string(resp->begin(), resp->end()), "HTTP/1.1 200 OK\r\nContent-Length: 17\r\n\r\ntest1234片仮名");
+  EXPECT_EQ(std::string(resp->begin(), resp->end()), "HTTP/1.1 200 OK\r\nConnection: close\r\nContent-Length: 17\r\n\r\ntest1234片仮名");
 
   server_thread.join();
 }

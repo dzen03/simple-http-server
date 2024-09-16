@@ -75,7 +75,7 @@ void Server::Start(const std::string &ip_addr, int port) {
                                              ISocket::Message(string_response.begin(), string_response.end())),
                                          client_sock);
     }
-    catch (const std::runtime_error &exception) {
+    catch (const std::exception &exception) {
       LOG(ERROR, exception.what());
     }
   }

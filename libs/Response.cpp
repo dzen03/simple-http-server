@@ -16,6 +16,10 @@ Response::Response(int statusCode, const std::string &body, const HeadersMap &he
   if (!headers_.contains("Content-Length")) {
     headers_.emplace("Content-Length", std::to_string(body_.length()));
   }
+
+  if (!headers_.contains("Connection")) { // TODO(dzen) create keep-alive mechanism
+    headers_.emplace("Connection", "close");
+  }
 }
 
 auto Response::Dump() -> std::string {

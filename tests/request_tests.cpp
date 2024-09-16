@@ -58,4 +58,21 @@ TEST(Request, ParseInvalidHeaders) {
   EXPECT_EQ(parsed.GetBody(), "");
 }
 
+TEST(Request, ParseInvalidHeadersWithValid) {
+  const auto& request = "GET /manager/html HTTP/1.1\r\n"
+                        "Host:\r\n" 
+                        "Connection: close\r\n"
+                        "User_Agent: Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/55.0.2883.87 Safari/537.36\r\n"
+                        "\r\n";
+
+  auto parsed = Request(request);
+
+  EXPECT_EQ(parsed.GetType(), Request::GET);
+  EXPECT_EQ(parsed.GetUrl(), "/manager/html");
+  EXPECT_EQ(parsed.GetArguments(), ArgumentsMap({}));
+  EXPECT_EQ(parsed.GetHttpVersion(), "HTTP/1.1");
+  EXPECT_EQ(parsed.GetHeaders(), HeadersMap({{"Connection", "close"}, {"User_Agent", "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/55.0.2883.87 Safari/537.36"}}));
+  EXPECT_EQ(parsed.GetBody(), "");
+}
+
 } // namespace simple_http_server
