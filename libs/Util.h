@@ -7,4 +7,4 @@
 using ArgumentsMap = std::unordered_map<std::string, std::string>;
 using HeadersMap = std::unordered_map<std::string, std::string>;
 
-#endif //SIMPLE_HTTP_SERVER_LIBS_UTIL_H_
+#endif  // SIMPLE_HTTP_SERVER_LIBS_UTIL_H_

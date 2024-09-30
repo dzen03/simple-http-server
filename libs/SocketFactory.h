@@ -10,6 +10,6 @@ class SocketFactory {
   static auto CreateSocket() -> std::unique_ptr<ISocket>;
 };
 
-} // namespace simple_http_server
+}  // namespace simple_http_server
 
-#endif //SIMPLE_HTTP_SERVER_SOCKETFACTORY_H
+#endif  // SIMPLE_HTTP_SERVER_SOCKETFACTORY_H

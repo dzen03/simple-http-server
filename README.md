@@ -4,7 +4,7 @@
 
 ## About
 
-Written from scratch for POSIX and Windows. 
+Written from scratch for POSIX and Windows.
 Primary development goes on macOS[^1], so WinAPI might be buggy/slightly outdated[^2].
 
 There is configured [Github Action on Linux + Windows](https://github.com/dzen03/simple-http-server/actions/workflows/ctest.yml). Both platform utilise clang-tidy.

@@ -29,20 +29,23 @@ class ISocket {
   auto operator=(ISocket&& source) -> ISocket& = default;
 
   virtual auto Connect(std::string address, int port) -> bool = 0;
-  virtual auto SendMessage(const std::unique_ptr<std::vector<Byte>> &message,
+  virtual auto SendMessage(const std::unique_ptr<std::vector<Byte>>& message,
                            SocketDescriptor socket_addr) -> bool = 0;
-  virtual auto SendMessageAndCloseClient(const std::unique_ptr<std::vector<Byte>> &message,
-                                         SocketDescriptor socket_addr) -> bool = 0;
-  virtual auto SendMessage(const std::unique_ptr<std::vector<Byte>> &message) -> bool = 0;
+  virtual auto SendMessageAndCloseClient(
+      const std::unique_ptr<std::vector<Byte>>& message,
+      SocketDescriptor socket_addr) -> bool = 0;
+  virtual auto SendMessage(const std::unique_ptr<std::vector<Byte>>& message)
+      -> bool = 0;
 
-  virtual auto BindAndListen(const std::string &address, int port) -> bool = 0;
+  virtual auto BindAndListen(const std::string& address, int port) -> bool = 0;
 
   virtual auto Accept() -> SocketDescriptor = 0;
 
   virtual auto ReceiveMessage() -> std::unique_ptr<std::vector<Byte>> = 0;
-  virtual auto ReceiveMessage(SocketDescriptor client_socket) -> std::unique_ptr<std::vector<Byte>> = 0;
+  virtual auto ReceiveMessage(SocketDescriptor client_socket)
+      -> std::unique_ptr<std::vector<Byte>> = 0;
 };
 
-} // namespace simple_http_server
+}  // namespace simple_http_server
 
-#endif //SIMPLE_HTTP_SERVER_LIBS_ISOCKET_H_
+#endif  // SIMPLE_HTTP_SERVER_LIBS_ISOCKET_H_
