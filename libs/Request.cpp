@@ -1,12 +1,13 @@
-#include "Logger.h"
 #include "Request.h"
-#include "Util.h"
 
 #include <sstream>
 
+#include "Logger.h"
+#include "Util.h"
+
 namespace simple_http_server {
 
-auto Request::ParseArguments(const std::string &url_with_args) -> ArgumentsMap {
+auto Request::ParseArguments(const std::string& url_with_args) -> ArgumentsMap {
   auto args_start = url_with_args.find('?');
 
   ArgumentsMap ret;
@@ -35,7 +36,7 @@ auto Request::ParseArguments(const std::string &url_with_args) -> ArgumentsMap {
   return ret;
 }
 
-Request::Request(const std::string &stringRequest) {
+Request::Request(const std::string& stringRequest) {
   std::istringstream req(stringRequest);
 
   std::string type;
@@ -43,11 +44,9 @@ Request::Request(const std::string &stringRequest) {
 
   if (type == "GET") {
     type_ = Request::Type::GET;
-  }
-  else if (type == "POST") {
+  } else if (type == "POST") {
     type_ = Request::Type::POST;
-  }
-  else {
+  } else {
     LOG(WARNING, "got unknown request type: " << stringRequest);
     type_ = Request::Type::UNKNOWN;
   }
@@ -61,7 +60,7 @@ Request::Request(const std::string &stringRequest) {
 
   std::string header_line;
 
-  req.ignore(2, '\n'); // skip \r\n after "operator>>" (because they stay)
+  req.ignore(2, '\n');  // skip \r\n after "operator>>" (because they stay)
 
   while (std::getline(req, header_line, '\n')) {
     if (header_line.ends_with('\r')) {
@@ -74,7 +73,8 @@ Request::Request(const std::string &stringRequest) {
 
     auto colon = header_line.find(':');
 
-    const auto value_start_pos = header_line.find_first_not_of(" \n\r\t", colon + 1);
+    const auto value_start_pos =
+        header_line.find_first_not_of(" \n\r\t", colon + 1);
 
     if (colon == std::string::npos || value_start_pos == std::string::npos) {
       LOG(WARNING, "got incorrect header " << NAMED_OUTPUT(header_line));
@@ -91,4 +91,4 @@ Request::Request(const std::string &stringRequest) {
   req >> body_;
 }
 
-} // namespace simple_http_server
+}  // namespace simple_http_server

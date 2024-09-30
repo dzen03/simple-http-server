@@ -1,8 +1,8 @@
-#include "Response.h"
-#include "Request.h"
-#include "Util.h"
-
 #include <gtest/gtest.h>
+
+#include "Request.h"
+#include "Response.h"
+#include "Util.h"
 
 namespace simple_http_server {
 
@@ -16,8 +16,9 @@ TEST(Response, CreateAndDumpResponseWithHeaders) {
                  << "\r\n"
                  << "Hello world";
 
-  //NOLINTNEXTLINE(readability-magic-numbers)
-  auto response = Response(200, "Hello world", {{"Content-Length", "11"}}).Dump();
+  // NOLINTNEXTLINE(readability-magic-numbers)
+  auto response =
+      Response(200, "Hello world", {{"Content-Length", "11"}}).Dump();
 
   EXPECT_EQ(canon_response.str(), response);
 }
@@ -32,9 +33,9 @@ TEST(Response, CreateAndDumpResponseWithoutHeaders) {
                  << "\r\n"
                  << "Hello world";
 
-  //NOLINTNEXTLINE(readability-magic-numbers)
+  // NOLINTNEXTLINE(readability-magic-numbers)
   auto response = Response(200, "Hello world").Dump();
 
   EXPECT_EQ(canon_response.str(), response);
 }
-} // namespace simple_http_server
+}  // namespace simple_http_server

@@ -19,7 +19,7 @@ ThreadPool::~ThreadPool() {
     stop_ = true;
   }
   condition_.notify_all();
-  for (std::thread &worker : workers_) {
+  for (std::thread& worker : workers_) {
     worker.join();
   }
 }

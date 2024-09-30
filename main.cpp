@@ -3,7 +3,7 @@
 auto main() -> int {
   simple_http_server::Server server;
 
-  server.MapUrl("/plain", [](const simple_http_server::Request&){
+  server.MapUrl("/plain", [](const simple_http_server::Request&) {
     static constexpr int OK_CODE = 200;
     return simple_http_server::Response(OK_CODE, "Hello world in plain text");
   });
