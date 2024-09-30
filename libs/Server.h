@@ -37,6 +37,8 @@ class Server {
   std::unordered_map<std::string, std::function<Response(Request)>> mappedUrls_;
   std::unordered_map<std::string, std::filesystem::path> mappedDirectories_;
   volatile std::atomic<bool> running_;
+
+  void HandleClient(const ISocket::SocketDescriptor& client_sock);
 };
 
 } // namespace simple_http_server

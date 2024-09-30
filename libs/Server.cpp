@@ -1,10 +1,11 @@
+#include "ISocket.h"
 #include "Logger.h"
 #include "Request.h"
 #include "Response.h"
 #include "Server.h"
-#include "Util.h"
-
 #include "SocketFactory.h"
+#include "ThreadPool.h"
+#include "Util.h"
 
 #include <sstream>
 #include <string>
@@ -21,6 +22,9 @@ void Server::Start(const std::string &ip_addr, int port) {
     LOG(WARNING, "there is no urls mapped");
   }
 
+  LOG(INFO, "Using " << std::thread::hardware_concurrency() << " threads");
+  ThreadPool threadPool(std::thread::hardware_concurrency());
+
   running_ = true;
   socket_->BindAndListen(ip_addr, port);
 
@@ -28,7 +32,21 @@ void Server::Start(const std::string &ip_addr, int port) {
     try {
       const auto &client_sock = socket_->Accept();
 
-      const auto &received = socket_->ReceiveMessage(client_sock);
+      threadPool.enqueue([this, client_sock]() {
+        HandleClient(client_sock);
+      });
+      
+    }
+    catch (const std::exception &exception) {
+      LOG(ERROR, exception.what());
+    }
+  }
+}
+
+void Server::HandleClient(const ISocket::SocketDescriptor& client_sock) {
+  const auto &received = socket_->ReceiveMessage(client_sock);
+
+  try {
 
       const auto &string_request = std::string(received->begin(), received->end());
 
@@ -74,11 +92,11 @@ void Server::Start(const std::string &ip_addr, int port) {
       socket_->SendMessageAndCloseClient(std::make_unique<ISocket::Message>(
                                              ISocket::Message(string_response.begin(), string_response.end())),
                                          client_sock);
-    }
-    catch (const std::exception &exception) {
-      LOG(ERROR, exception.what());
-    }
   }
+  catch (const std::exception &exception) {
+    LOG(ERROR, exception.what());
+  }
+
 }
 
 void Server::Stop() {
