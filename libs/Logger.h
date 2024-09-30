@@ -18,9 +18,10 @@ namespace simple_http_server {
 enum Level : std::uint8_t { LOGGER_LEVELS };
 #undef X
 
-// NOLINTNEXTLINE(bugprone-macro-parentheses)
-#define LOG(level, message) \
-  Logger::Log((Logger::level_name[level]), (std::ostringstream() << message))
+#define LOG(level, message)                \
+  Logger::Log((Logger::level_name[level]), \
+              (std::ostringstream()        \
+               << message))  // NOLINT(bugprone-macro-parentheses)
 
 #define NAMED_OUTPUT(variable) #variable << ": " << variable
 

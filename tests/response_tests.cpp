@@ -16,9 +16,9 @@ TEST(Response, CreateAndDumpResponseWithHeaders) {
                  << "\r\n"
                  << "Hello world";
 
-  // NOLINTNEXTLINE(readability-magic-numbers)
-  auto response =
-      Response(200, "Hello world", {{"Content-Length", "11"}}).Dump();
+  auto response = Response(200,  // NOLINT(readability-magic-numbers)
+                           "Hello world", {{"Content-Length", "11"}})
+                      .Dump();
 
   EXPECT_EQ(canon_response.str(), response);
 }
