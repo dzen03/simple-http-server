@@ -4,7 +4,6 @@
 #include <ctime>
 #include <fstream>
 #include <iomanip>
-#include <iostream>
 
 namespace simple_http_server {
 

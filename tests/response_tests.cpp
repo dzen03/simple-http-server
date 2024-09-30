@@ -1,6 +1,5 @@
 #include <gtest/gtest.h>
 
-#include "Request.h"
 #include "Response.h"
 #include "Util.h"
 

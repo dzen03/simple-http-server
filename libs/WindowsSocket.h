@@ -5,12 +5,17 @@
 
 #ifdef WINDOWS
 
-#include <winsock2.h>  // NOLINT(llvm-include-order) cause of "Please include winsock2.h before windows.h"
+#include "ISocket.h"
 
 #define SIMPLE_HTTP_SERVER_LIBS_POSIXSOCKET_H_USELESS_DEFINE  // define to tell
 #undef SIMPLE_HTTP_SERVER_LIBS_POSIXSOCKET_H_USELESS_DEFINE   // clang-format to
                                                               // not shuffle
                                                               // includes
+
+#include <winsock2.h>  // NOLINT(llvm-include-order) cause of "Please include winsock2.h before windows.h"
+
+#define SIMPLE_HTTP_SERVER_LIBS_POSIXSOCKET_H_USELESS_DEFINE  // same
+#undef SIMPLE_HTTP_SERVER_LIBS_POSIXSOCKET_H_USELESS_DEFINE   //
 
 #include <windows.h>
 #include <ws2tcpip.h>
@@ -18,8 +23,6 @@
 #include <memory>
 #include <string>
 #include <vector>
-
-#include "ISocket.h"
 
 namespace simple_http_server {
 
