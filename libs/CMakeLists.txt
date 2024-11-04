@@ -1,6 +1,6 @@
 file(GLOB_RECURSE sources CONFIGURE_DEPENDS
-        *.cpp
-        *.h
+        sources/*.cpp
+        includes/*.h
 )
 
 if (WIN32)
@@ -10,4 +10,4 @@ else ()
     add_library(simple-http-server-sources SHARED ${sources})
 endif ()
 
-target_include_directories(simple-http-server-sources PUBLIC .)
+target_include_directories(simple-http-server-sources PUBLIC sources includes)
