@@ -51,13 +51,14 @@ class WindowsSocket : public ISocket {
 
  private:
   SOCKET socketDescriptor_;
-  addrinfo* address_;
+  addrinfo* address_ = nullptr;
 
   inline static WSADATA wsaData_{};
   inline static bool wsaStarted_ = false;
   inline static std::mutex wsaLock_{};
 
-  static auto CreateAddress(const std::string& address, int port) -> addrinfo;
+  static auto CreateAddress(const std::string& address, int port,
+                            decltype(address_)& addr_out) noexcept -> int;
 };
 
 }  // namespace simple_http_server

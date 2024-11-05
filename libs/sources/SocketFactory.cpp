@@ -20,7 +20,7 @@ auto SocketFactory::CreateSocket(const std::string& address,
 #ifdef POSIX
   return std::make_unique<PosixSocket>(address, port);
 #elif defined WINDOWS
-  return std::make_unique<WindowsSocket>();
+  return std::make_unique<WindowsSocket>(address, port);
 #else
 #error Unknown platform
 #endif

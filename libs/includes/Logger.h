@@ -40,7 +40,7 @@ class Logger {
   inline static const std::vector<char const*> level_name = {LOGGER_LEVELS};
 #undef X
  private:
-  static std::ofstream logStream_;
+  static std::ofstream logStream_;  // NOLINT
 };
 
 }  // namespace simple_http_server

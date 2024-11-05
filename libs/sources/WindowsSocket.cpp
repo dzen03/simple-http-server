@@ -40,13 +40,13 @@ WindowsSocket::WindowsSocket(const std::string& address, int port) {
 
 WindowsSocket::~WindowsSocket() {
   closesocket(socketDescriptor_);
-  freeaddrinfo(result);
+  freeaddrinfo(address_);
   WSACleanup();
 }
 
 auto WindowsSocket::BindAndListen() -> bool {
-  if (bind(socketDescriptor_, address_->ai_addr, address_->ai_addrlen) ==
-      SOCKET_ERROR) {
+  if (bind(socketDescriptor_, address_->ai_addr,
+           static_cast<int>(address_->ai_addrlen)) == SOCKET_ERROR) {
     return false;
   }
 
@@ -55,8 +55,8 @@ auto WindowsSocket::BindAndListen() -> bool {
 }
 
 auto WindowsSocket::Connect() -> bool {
-  return (connect(socketDescriptor_, address_->ai_addr, address_->ai_addrlen) ==
-          0);
+  return (connect(socketDescriptor_, address_->ai_addr,
+                  static_cast<int>(address_->ai_addrlen)) == 0);
 }
 
 auto WindowsSocket::SendMessage(

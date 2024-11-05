@@ -8,7 +8,7 @@
 namespace simple_http_server {
 
 // FIXME(dzen) rewrite this
-// NOLINTNEXTLINE(cppcoreguidelines-interfaces-global-init)
+// NOLINTNEXTLINE
 std::ofstream Logger::logStream_ = std::ofstream(logFilename);
 
 void Logger::Log(const char* level, std::ostringstream&& message) {
