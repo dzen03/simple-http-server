@@ -25,6 +25,7 @@ enum Level : std::uint8_t { LOGGER_LEVELS };
               (std::ostringstream()        \
                << message))  // NOLINT(bugprone-macro-parentheses)
 
+// NOLINTNEXTLINE(cppcoreguidelines-macro-usage)
 #define NAMED_OUTPUT(variable) #variable << ": " << variable
 
 class Logger {
