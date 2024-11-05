@@ -1,5 +1,5 @@
-#ifndef SIMPLE_HTTP_SERVER_LIBS_POSIXSOCKET_H_
-#define SIMPLE_HTTP_SERVER_LIBS_POSIXSOCKET_H_
+#ifndef SIMPLE_HTTP_SERVER_LIBS_WINDOWSSOCKET_H_
+#define SIMPLE_HTTP_SERVER_LIBS_WINDOWSSOCKET_H_
 
 #include "DefineSystem.h"
 
@@ -7,15 +7,14 @@
 
 #include "ISocket.h"
 
-#define SIMPLE_HTTP_SERVER_LIBS_POSIXSOCKET_H_USELESS_DEFINE  // define to tell
-#undef SIMPLE_HTTP_SERVER_LIBS_POSIXSOCKET_H_USELESS_DEFINE   // clang-format to
-                                                              // not shuffle
-                                                              // includes
+#define SIMPLE_HTTP_SERVER_LIBS_WINDOWSSOCKET_H_USELESS_DEFINE
+#undef SIMPLE_HTTP_SERVER_LIBS_WINDOWSSOCKET_H_USELESS_DEFINE
+// defined to tell clang-format to not move includes around
 
 #include <winsock2.h>  // NOLINT(llvm-include-order) cause of "Please include winsock2.h before windows.h"
 
-#define SIMPLE_HTTP_SERVER_LIBS_POSIXSOCKET_H_USELESS_DEFINE  // same
-#undef SIMPLE_HTTP_SERVER_LIBS_POSIXSOCKET_H_USELESS_DEFINE   //
+#define SIMPLE_HTTP_SERVER_LIBS_WINDOWSSOCKET_H_USELESS_DEFINE  // same
+#undef SIMPLE_HTTP_SERVER_LIBS_WINDOWSSOCKET_H_USELESS_DEFINE   //
 
 #include <windows.h>
 #include <ws2tcpip.h>
@@ -30,6 +29,12 @@ class WindowsSocket : public ISocket {
  public:
   WindowsSocket(const std::string& address, int port);
   ~WindowsSocket() override;
+
+  WindowsSocket(const WindowsSocket& source) = default;
+  WindowsSocket(WindowsSocket&& source) = default;
+
+  auto operator=(const WindowsSocket& source) -> WindowsSocket& = default;
+  auto operator=(WindowsSocket&& source) -> WindowsSocket& = default;
 
   auto BindAndListen() -> bool override;
   auto Connect() -> bool override;
@@ -65,4 +70,4 @@ class WindowsSocket : public ISocket {
 
 #endif  // WINDOWS
 
-#endif  // SIMPLE_HTTP_SERVER_LIBS_POSIXSOCKET_H_
+#endif  // SIMPLE_HTTP_SERVER_LIBS_WINDOWSSOCKET_H_

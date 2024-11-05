@@ -89,14 +89,11 @@ auto PosixSocket::ReceiveMessage() -> std::unique_ptr<std::vector<Byte>> {
 
 auto PosixSocket::CreateAddress(const std::string& address, int port,
                                 decltype(address_)& addr_out) noexcept -> int {
-  const addrinfo hints{.ai_flags = AI_PASSIVE,
-                       .ai_family = AF_UNSPEC,
-                       .ai_socktype = SOCK_STREAM,
-                       .ai_protocol = IPPROTO_TCP,
-                       .ai_addrlen = 0,
-                       .ai_canonname = nullptr,
-                       .ai_addr = nullptr,
-                       .ai_next = nullptr};
+  addrinfo hints{};
+  hints.ai_flags = AI_PASSIVE;
+  hints.ai_family = AF_UNSPEC;
+  hints.ai_socktype = SOCK_STREAM;
+  hints.ai_protocol = IPPROTO_TCP;
 
   return getaddrinfo(address.c_str(), std::to_string(port).c_str(), &hints,
                      &addr_out);
