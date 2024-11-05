@@ -28,11 +28,11 @@ namespace simple_http_server {
 
 class WindowsSocket : public ISocket {
  public:
-  WindowsSocket();
+  WindowsSocket(const std::string& address, int port);
   ~WindowsSocket() override;
 
-  auto BindAndListen(const std::string& address, int port) -> bool override;
-  auto Connect(std::string address, int port) -> bool override;
+  auto BindAndListen() -> bool override;
+  auto Connect() -> bool override;
 
 #undef SendMessage  // cause of mingw
 
@@ -51,7 +51,7 @@ class WindowsSocket : public ISocket {
 
  private:
   SOCKET socketDescriptor_;
-  addrinfo address_;
+  addrinfo* address_;
 
   inline static WSADATA wsaData_{};
   inline static bool wsaStarted_ = false;

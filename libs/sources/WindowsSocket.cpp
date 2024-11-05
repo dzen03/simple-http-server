@@ -22,7 +22,7 @@
 
 namespace simple_http_server {
 
-WindowsSocket::WindowsSocket() {
+WindowsSocket::WindowsSocket(const std::string& address, int port) {
   wsaLock_.lock();
 
   if (!wsaStarted_) {
@@ -32,28 +32,31 @@ WindowsSocket::WindowsSocket() {
 
   wsaLock_.unlock();
 
-  socketDescriptor_ = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+  CreateAddress(address, port, address_);
+
+  socketDescriptor_ =
+      socket(address_->ai_family, address_->ai_socktype, address_->ai_protocol);
 }
 
-WindowsSocket::~WindowsSocket() { closesocket(socketDescriptor_); }
+WindowsSocket::~WindowsSocket() {
+  closesocket(socketDescriptor_);
+  freeaddrinfo(result);
+  WSACleanup();
+}
 
-auto WindowsSocket::BindAndListen(const std::string& address,
-                                  int port) -> bool {
-  address_ = CreateAddress(address, port);
-
-  if (bind(socketDescriptor_, address_.ai_addr,
-           static_cast<int>(address_.ai_addrlen)) == SOCKET_ERROR) {
+auto WindowsSocket::BindAndListen() -> bool {
+  if (bind(socketDescriptor_, address_->ai_addr, address_->ai_addrlen) ==
+      SOCKET_ERROR) {
     return false;
   }
 
-  return (listen(socketDescriptor_, 1) != SOCKET_ERROR);
+  static constexpr int backlog = 5;
+  return (listen(socketDescriptor_, backlog) != SOCKET_ERROR);
 }
 
-auto WindowsSocket::Connect(std::string address, int port) -> bool {
-  address_ = CreateAddress(address, port);
-
-  return (connect(socketDescriptor_, address_.ai_addr,
-                  static_cast<int>(address_.ai_addrlen)) == 0);
+auto WindowsSocket::Connect() -> bool {
+  return (connect(socketDescriptor_, address_->ai_addr, address_->ai_addrlen) ==
+          0);
 }
 
 auto WindowsSocket::SendMessage(
@@ -104,21 +107,20 @@ auto WindowsSocket::ReceiveMessage() -> std::unique_ptr<std::vector<Byte>> {
   return ReceiveMessage(static_cast<int>(socketDescriptor_));
 }
 
-auto WindowsSocket::CreateAddress(const std::string& address,
-                                  int port) -> addrinfo {
-  addrinfo hints{};
-  hints.ai_family = AF_INET;
-  hints.ai_socktype = SOCK_STREAM;
-  hints.ai_protocol = IPPROTO_TCP;
+auto WindowsSocket::CreateAddress(const std::string& address, int port,
+                                  decltype(address_)& addr_out) noexcept
+    -> int {
+  const addrinfo hints{.ai_flags = AI_PASSIVE,
+                       .ai_family = AF_UNSPEC,
+                       .ai_socktype = SOCK_STREAM,
+                       .ai_protocol = IPPROTO_TCP,
+                       .ai_addrlen = 0,
+                       .ai_canonname = nullptr,
+                       .ai_addr = nullptr,
+                       .ai_next = nullptr};
 
-  addrinfo* p_res;
-
-  auto ret = getaddrinfo(address.c_str(), std::to_string(port).c_str(), &hints,
-                         &p_res);
-
-  (void)ret;
-
-  return *p_res;
+  return getaddrinfo(address.c_str(), std::to_string(port).c_str(), &hints,
+                     &addr_out);
 }
 
 }  // namespace simple_http_server

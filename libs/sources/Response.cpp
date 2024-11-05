@@ -1,21 +1,18 @@
 #include "Response.h"
 
-#include <memory>
 #include <sstream>
 
 #include "Util.h"
 
 namespace simple_http_server {
 
-Response::Response(int statusCode, const std::string& body,
-                   const HeadersMap& headers,
-                   const std::string& statusMessage) {
-  statusCode_ = statusCode;
-  statusMessage_ = (statusMessage.empty() ? defaultMessages_.at(statusCode_)
-                                          : statusMessage);
-  headers_ = headers;
-  body_ = body;
-
+Response::Response(int statusCode, std::string body, HeadersMap headers,
+                   const std::string& statusMessage)
+    : statusCode_(statusCode),
+      statusMessage_(statusMessage.empty() ? defaultMessages_.at(statusCode_)
+                                           : statusMessage),
+      headers_(std::move(headers)),
+      body_(std::move(body)) {
   if (!headers_.contains("Content-Length")) {
     headers_.emplace("Content-Length", std::to_string(body_.length()));
   }

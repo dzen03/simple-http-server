@@ -16,14 +16,15 @@ namespace simple_http_server {
 
 class Server {
  public:
-  Server();
+  Server(const std::string& ip_addr, int port);
+  ~Server() = default;
 
   Server(const Server& server) = delete;
   auto operator=(Server& other) = delete;
   Server(Server&& server) = delete;
   auto operator=(Server&& other) = delete;
 
-  void Start(const std::string& ip_addr, int port);
+  void Start();
   void Stop();
 
   void MapUrl(const std::string& path,

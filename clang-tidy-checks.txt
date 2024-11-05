@@ -1,10 +1,12 @@
 bugprone-*
 clang-analyzer-*
+cppcoreguidelines-*
 google-*
 llvm-include-order
 misc-*
 modernize-*
 performance-*
+portability-*
 readability-*
 
 -misc-include-cleaner

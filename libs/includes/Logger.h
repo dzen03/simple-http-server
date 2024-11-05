@@ -14,10 +14,12 @@ namespace simple_http_server {
   X(WARNING, "WARNING") \
   X(ERROR, "ERROR")
 
+// NOLINTNEXTLINE(cppcoreguidelines-macro-usage)
 #define X(level, name) level,
 enum Level : std::uint8_t { LOGGER_LEVELS };
 #undef X
 
+// NOLINTNEXTLINE(cppcoreguidelines-macro-usage)
 #define LOG(level, message)                \
   Logger::Log((Logger::level_name[level]), \
               (std::ostringstream()        \
@@ -27,11 +29,12 @@ enum Level : std::uint8_t { LOGGER_LEVELS };
 
 class Logger {
  public:
-  static constexpr auto logFilename = "server.log";  // TODO(dzen) rewrite this
+  static constexpr auto logFilename = "server.log";  // FIXME(dzen) rewrite this
 
   static void Log(const char* level, std::ostringstream&& message);
   static void Flush();
 
+// NOLINTNEXTLINE(cppcoreguidelines-macro-usage)
 #define X(level, name) name,
   inline static const std::vector<char const*> level_name = {LOGGER_LEVELS};
 #undef X

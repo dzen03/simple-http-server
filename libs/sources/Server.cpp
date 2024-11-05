@@ -14,9 +14,10 @@
 
 namespace simple_http_server {
 
-Server::Server() { socket_ = SocketFactory::CreateSocket(); }
+Server::Server(const std::string& ip_addr, int port)
+    : socket_(SocketFactory::CreateSocket(ip_addr, port)) {}
 
-void Server::Start(const std::string& ip_addr, int port) {
+void Server::Start() {
   if (mappedUrls_.empty()) {
     LOG(WARNING, "there is no urls mapped");
   }
@@ -25,7 +26,7 @@ void Server::Start(const std::string& ip_addr, int port) {
   ThreadPool threadPool(std::thread::hardware_concurrency());
 
   running_ = true;
-  socket_->BindAndListen(ip_addr, port);
+  socket_->BindAndListen();
 
   while (running_) {
     try {
@@ -118,7 +119,7 @@ auto Server::Render(const std::filesystem::path& file,
                     const std::string& content_type) -> Response {
   const std::ifstream temp(file);
   std::stringstream buffer;
-  buffer << temp.rdbuf();  // redundant copy
+  buffer << temp.rdbuf();  // FIXME(dzen) redundant copy
 
   static constexpr int OK_CODE = 200;
   return Response(

@@ -23,7 +23,7 @@ class Request {
  private:
   static auto ParseArguments(const std::string& url_with_args) -> ArgumentsMap;
 
-  Type type_;
+  Type type_ = UNKNOWN;
   std::string url_;
   ArgumentsMap arguments_;
   std::string httpVersion_;

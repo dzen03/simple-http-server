@@ -1,7 +1,8 @@
 #include "Server.h"
 
 auto main() -> int {
-  simple_http_server::Server server;
+  static constexpr int DEFAULT_PORT = 8080;
+  simple_http_server::Server server("0.0.0.0", DEFAULT_PORT);
 
   server.MapUrl("/plain", [](const simple_http_server::Request&) {
     static constexpr int OK_CODE = 200;
@@ -14,8 +15,7 @@ auto main() -> int {
 
   server.MapDirectory("/dir", "./");
 
-  static constexpr int DEFAULT_PORT = 8080;
-  server.Start("0.0.0.0", DEFAULT_PORT);
+  server.Start();
 
   return 0;
 }

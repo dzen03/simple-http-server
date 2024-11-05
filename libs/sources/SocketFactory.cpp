@@ -15,9 +15,10 @@
 
 namespace simple_http_server {
 
-auto SocketFactory::CreateSocket() -> std::unique_ptr<ISocket> {
+auto SocketFactory::CreateSocket(const std::string& address,
+                                 int port) -> std::unique_ptr<ISocket> {
 #ifdef POSIX
-  return std::make_unique<PosixSocket>();
+  return std::make_unique<PosixSocket>(address, port);
 #elif defined WINDOWS
   return std::make_unique<WindowsSocket>();
 #else

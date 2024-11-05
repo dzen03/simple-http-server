@@ -10,6 +10,11 @@ class ThreadPool {
   explicit ThreadPool(size_t numThreads);
   ~ThreadPool();
 
+  ThreadPool(const ThreadPool& server) = delete;
+  auto operator=(ThreadPool& other) = delete;
+  ThreadPool(ThreadPool&& server) = delete;
+  auto operator=(ThreadPool&& other) = delete;
+
   void enqueue(std::function<void()> task);
 
  private:

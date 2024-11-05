@@ -6,6 +6,7 @@
 #ifdef POSIX
 
 #include <arpa/inet.h>
+#include <netdb.h>
 #include <netinet/in.h>
 #include <sys/socket.h>
 
@@ -19,7 +20,7 @@ namespace simple_http_server {
 
 class PosixSocket : public ISocket {
  public:
-  PosixSocket();
+  PosixSocket(const std::string& address, int port);
   ~PosixSocket() override;
 
   PosixSocket(const PosixSocket& source) = default;
@@ -28,8 +29,8 @@ class PosixSocket : public ISocket {
   auto operator=(const PosixSocket& source) -> PosixSocket& = default;
   auto operator=(PosixSocket&& source) -> PosixSocket& = default;
 
-  auto BindAndListen(const std::string& address, int port) -> bool override;
-  auto Connect(std::string address, int port) -> bool override;
+  auto BindAndListen() -> bool override;
+  auto Connect() -> bool override;
   auto SendMessage(const std::unique_ptr<std::vector<Byte>>& message)
       -> bool override;
   auto SendMessage(const std::unique_ptr<std::vector<Byte>>& message,
@@ -44,10 +45,10 @@ class PosixSocket : public ISocket {
 
  private:
   SocketDescriptor socketDescriptor_;
-  sockaddr_in address_{};
+  addrinfo* address_ = nullptr;
 
-  static auto CreateAddress(const std::string& address,
-                            int port) noexcept -> sockaddr_in;
+  static auto CreateAddress(const std::string& address, int port,
+                            decltype(address_)& addr_out) noexcept -> int;
 };
 
 }  // namespace simple_http_server
