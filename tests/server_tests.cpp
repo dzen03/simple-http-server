@@ -19,23 +19,23 @@ TEST(Server, MapURL) {
       static_cast<int>(dist(rng));  // TODO(dzen) use kernel to get random port
   // "STATIC" port isn't working properly
 
-  Server server;
+  Server server("127.0.0.1", PORT);
 
-  std::thread server_thread([&server, &PORT]() {
+  std::thread server_thread([&server]() {
     server.MapUrl("/", [](const simple_http_server::Request&) {
       static constexpr int OK_CODE = 200;
       return simple_http_server::Response(OK_CODE, "test1234片仮名");
     });
 
-    server.Start("127.0.0.1", PORT);  // NOLINT
+    server.Start();
   });
 
-  std::this_thread::sleep_for(std::chrono::seconds(2));  // NOLINT
+  std::this_thread::sleep_for(std::chrono::seconds(2));
   server.Stop();
 
-  auto client = SocketFactory::CreateSocket();
+  auto client = SocketFactory::CreateSocket("127.0.0.1", PORT);
 
-  const auto& connected = client->Connect("127.0.0.1", PORT);  // NOLINT
+  const auto& connected = client->Connect();
 
   if (!connected) {
     server_thread.join();

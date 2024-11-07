@@ -1,5 +1,5 @@
-#ifndef SIMPLE_HTTP_SERVER_LIBS_POSIXSOCKET_H_
-#define SIMPLE_HTTP_SERVER_LIBS_POSIXSOCKET_H_
+#ifndef SIMPLE_HTTP_SERVER_LIBS_WINDOWSSOCKET_H_
+#define SIMPLE_HTTP_SERVER_LIBS_WINDOWSSOCKET_H_
 
 #include "DefineSystem.h"
 
@@ -7,15 +7,14 @@
 
 #include "ISocket.h"
 
-#define SIMPLE_HTTP_SERVER_LIBS_POSIXSOCKET_H_USELESS_DEFINE  // define to tell
-#undef SIMPLE_HTTP_SERVER_LIBS_POSIXSOCKET_H_USELESS_DEFINE   // clang-format to
-                                                              // not shuffle
-                                                              // includes
+#define SIMPLE_HTTP_SERVER_LIBS_WINDOWSSOCKET_H_USELESS_DEFINE
+#undef SIMPLE_HTTP_SERVER_LIBS_WINDOWSSOCKET_H_USELESS_DEFINE
+// defined to tell clang-format to not move includes around
 
 #include <winsock2.h>  // NOLINT(llvm-include-order) cause of "Please include winsock2.h before windows.h"
 
-#define SIMPLE_HTTP_SERVER_LIBS_POSIXSOCKET_H_USELESS_DEFINE  // same
-#undef SIMPLE_HTTP_SERVER_LIBS_POSIXSOCKET_H_USELESS_DEFINE   //
+#define SIMPLE_HTTP_SERVER_LIBS_WINDOWSSOCKET_H_USELESS_DEFINE  // same
+#undef SIMPLE_HTTP_SERVER_LIBS_WINDOWSSOCKET_H_USELESS_DEFINE   //
 
 #include <windows.h>
 #include <ws2tcpip.h>
@@ -28,11 +27,17 @@ namespace simple_http_server {
 
 class WindowsSocket : public ISocket {
  public:
-  WindowsSocket();
+  WindowsSocket(const std::string& address, int port);
   ~WindowsSocket() override;
 
-  auto BindAndListen(const std::string& address, int port) -> bool override;
-  auto Connect(std::string address, int port) -> bool override;
+  WindowsSocket(const WindowsSocket& source) = default;
+  WindowsSocket(WindowsSocket&& source) = default;
+
+  auto operator=(const WindowsSocket& source) -> WindowsSocket& = default;
+  auto operator=(WindowsSocket&& source) -> WindowsSocket& = default;
+
+  auto BindAndListen() -> bool override;
+  auto Connect() -> bool override;
 
 #undef SendMessage  // cause of mingw
 
@@ -51,17 +56,18 @@ class WindowsSocket : public ISocket {
 
  private:
   SOCKET socketDescriptor_;
-  addrinfo address_;
+  addrinfo* address_ = nullptr;
 
   inline static WSADATA wsaData_{};
   inline static bool wsaStarted_ = false;
   inline static std::mutex wsaLock_{};
 
-  static auto CreateAddress(const std::string& address, int port) -> addrinfo;
+  static auto CreateAddress(const std::string& address, int port,
+                            decltype(address_)& addr_out) noexcept -> int;
 };
 
 }  // namespace simple_http_server
 
 #endif  // WINDOWS
 
-#endif  // SIMPLE_HTTP_SERVER_LIBS_POSIXSOCKET_H_
+#endif  // SIMPLE_HTTP_SERVER_LIBS_WINDOWSSOCKET_H_

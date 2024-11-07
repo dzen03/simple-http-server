@@ -16,10 +16,11 @@ TEST(Socket, BasicPong) {
   auto buffer =
       std::make_unique<ISocket::Message>(ISocket::Message(test_message.size()));
 
-  auto server = SocketFactory::CreateSocket();
-  auto client = SocketFactory::CreateSocket();
+  constexpr int port = 12345;
+  auto server = SocketFactory::CreateSocket("127.0.0.1", port);
+  auto client = SocketFactory::CreateSocket("127.0.0.1", port);
 
-  ASSERT_TRUE(server->BindAndListen("127.0.0.1", 12345));
+  ASSERT_TRUE(server->BindAndListen());
 
   std::thread server_thread([&server, &test_message]() {
     auto client_sock = server->Accept();
@@ -30,9 +31,7 @@ TEST(Socket, BasicPong) {
     EXPECT_EQ(*received, test_message);
   });
 
-  // TODO(dzen) think about race here
-
-  EXPECT_TRUE(client->Connect("127.0.0.1", 12345));
+  EXPECT_TRUE(client->Connect());
   EXPECT_TRUE(
       client->SendMessage(std::make_unique<ISocket::Message>(test_message)));
 

@@ -3,12 +3,12 @@
 #ifdef POSIX
 
 #include <arpa/inet.h>
+#include <netdb.h>
 #include <netinet/in.h>
 #include <sys/socket.h>
 #include <unistd.h>
 
 #include <memory>
-#include <optional>
 #include <string>
 #include <vector>
 
@@ -16,17 +16,21 @@
 
 namespace simple_http_server {
 
-PosixSocket::PosixSocket() {
-  socketDescriptor_ = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP);
+PosixSocket::PosixSocket(const std::string& address, int port) {
+  CreateAddress(address, port, address_);
+
+  socketDescriptor_ =
+      socket(address_->ai_family, address_->ai_socktype, address_->ai_protocol);
 }
 
-PosixSocket::~PosixSocket() { close(socketDescriptor_); }
+PosixSocket::~PosixSocket() {
+  freeaddrinfo(address_);
 
-auto PosixSocket::BindAndListen(const std::string& address, int port) -> bool {
-  address_ = CreateAddress(address, port);
+  close(socketDescriptor_);
+}
 
-  if (bind(socketDescriptor_, reinterpret_cast<sockaddr*>(&address_),
-           sizeof(address_)) == -1) {
+auto PosixSocket::BindAndListen() -> bool {
+  if (bind(socketDescriptor_, address_->ai_addr, address_->ai_addrlen) == -1) {
     return false;
   }
 
@@ -34,11 +38,9 @@ auto PosixSocket::BindAndListen(const std::string& address, int port) -> bool {
   return (listen(socketDescriptor_, backlog) == 0);
 }
 
-auto PosixSocket::Connect(std::string address, int port) -> bool {
-  address_ = CreateAddress(address, port);
-
-  return (connect(socketDescriptor_, reinterpret_cast<sockaddr*>(&address_),
-                  sizeof(address_)) == 0);
+auto PosixSocket::Connect() -> bool {
+  return (connect(socketDescriptor_, address_->ai_addr, address_->ai_addrlen) ==
+          0);
 }
 
 auto PosixSocket::SendMessage(
@@ -61,12 +63,8 @@ auto PosixSocket::SendMessageAndCloseClient(
 }
 
 auto PosixSocket::Accept() -> SocketDescriptor {
-  socklen_t address_size = sizeof(address_);
-
   PosixSocket::SocketDescriptor client_addr = -1;
-  if (client_addr =
-          accept(socketDescriptor_, reinterpret_cast<sockaddr*>(&address_),
-                 &address_size);
+  if (client_addr = accept(socketDescriptor_, nullptr, nullptr);
       client_addr == -1) {
     throw std::runtime_error("could not accept socket");
   }
@@ -89,14 +87,16 @@ auto PosixSocket::ReceiveMessage() -> std::unique_ptr<std::vector<Byte>> {
   return ReceiveMessage(socketDescriptor_);
 }
 
-auto PosixSocket::CreateAddress(const std::string& address,
-                                int port) noexcept -> sockaddr_in {
-  sockaddr_in res{};
-  res.sin_family = AF_INET;
-  res.sin_port = htons(port);
-  res.sin_addr.s_addr = inet_addr(address.c_str());
+auto PosixSocket::CreateAddress(const std::string& address, int port,
+                                decltype(address_)& addr_out) noexcept -> int {
+  addrinfo hints{};
+  hints.ai_flags = AI_PASSIVE;
+  hints.ai_family = AF_UNSPEC;
+  hints.ai_socktype = SOCK_STREAM;
+  hints.ai_protocol = IPPROTO_TCP;
 
-  return res;
+  return getaddrinfo(address.c_str(), std::to_string(port).c_str(), &hints,
+                     &addr_out);
 }
 
 }  // namespace simple_http_server

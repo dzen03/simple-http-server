@@ -3,8 +3,6 @@
 
 #include <cstdint>
 #include <memory>
-#include <optional>
-#include <string>
 #include <vector>
 
 #include "DefineSystem.h"
@@ -28,7 +26,7 @@ class ISocket {
   auto operator=(const ISocket& source) -> ISocket& = default;
   auto operator=(ISocket&& source) -> ISocket& = default;
 
-  virtual auto Connect(std::string address, int port) -> bool = 0;
+  virtual auto Connect() -> bool = 0;
   virtual auto SendMessage(const std::unique_ptr<std::vector<Byte>>& message,
                            SocketDescriptor socket_addr) -> bool = 0;
   virtual auto SendMessageAndCloseClient(
@@ -37,7 +35,7 @@ class ISocket {
   virtual auto SendMessage(const std::unique_ptr<std::vector<Byte>>& message)
       -> bool = 0;
 
-  virtual auto BindAndListen(const std::string& address, int port) -> bool = 0;
+  virtual auto BindAndListen() -> bool = 0;
 
   virtual auto Accept() -> SocketDescriptor = 0;
 

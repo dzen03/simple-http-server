@@ -11,8 +11,8 @@ class Response {
  public:
   Response() = default;
 
-  explicit Response(int statusCode, const std::string& body = "",
-                    const HeadersMap& headers = HeadersMap(),
+  explicit Response(int statusCode, std::string body = "",
+                    HeadersMap headers = HeadersMap(),
                     const std::string& statusMessage = "");
   auto Dump() -> std::string;
 
