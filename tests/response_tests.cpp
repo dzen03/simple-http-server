@@ -1,7 +1,6 @@
 #include <gtest/gtest.h>
 
 #include "Response.h"
-#include "Server.h"
 #include "Util.h"
 
 namespace simple_http_server {

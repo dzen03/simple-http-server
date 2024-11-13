@@ -1,16 +1,13 @@
 #ifndef SIMPLE_HTTP_SERVER_LIBS_SERVER_H_
 #define SIMPLE_HTTP_SERVER_LIBS_SERVER_H_
 
-#include <algorithm>
 #include <atomic>
 #include <cstdint>
 #include <filesystem>
 #include <functional>
-#include <map>
 #include <regex>
 #include <string>
 #include <unordered_map>
-#include <unordered_set>
 
 #include "DefineSystem.h"
 #include "ISocket.h"
