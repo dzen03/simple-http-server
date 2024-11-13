@@ -45,19 +45,22 @@ auto PosixSocket::Connect() -> bool {
 
 auto PosixSocket::SendMessage(
     const std::unique_ptr<std::vector<PosixSocket::Byte>>& message) -> bool {
-  return (send(socketDescriptor_, message->data(), message->size(), 0) != -1);
+  return (send(socketDescriptor_, message->data(), message->size(),
+               MSG_NOSIGNAL) != -1);
 }
 
 auto PosixSocket::SendMessage(
     const std::unique_ptr<std::vector<PosixSocket::Byte>>& message,
     SocketDescriptor socket_addr) -> bool {
-  return (send(socket_addr, message->data(), message->size(), 0) != -1);
+  return (send(socket_addr, message->data(), message->size(), MSG_NOSIGNAL) !=
+          -1);
 }
 
 auto PosixSocket::SendMessageAndCloseClient(
     const std::unique_ptr<std::vector<PosixSocket::Byte>>& message,
     SocketDescriptor socket_addr) -> bool {
-  auto res = send(socket_addr, message->data(), message->size(), 0) != -1;
+  auto res =
+      send(socket_addr, message->data(), message->size(), MSG_NOSIGNAL) != -1;
   close(socket_addr);
   return res;
 }
@@ -78,6 +81,9 @@ auto PosixSocket::ReceiveMessage(SocketDescriptor client_socket)
       std::make_unique<std::vector<Byte>>(std::vector<Byte>(MAX_BUFFER_SIZE));
 
   const auto& len = recv(client_socket, buffer->data(), buffer->size(), 0);
+  if (len == -1) {
+    return nullptr;
+  }
   buffer->resize(len);
 
   return buffer;

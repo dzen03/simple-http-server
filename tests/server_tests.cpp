@@ -23,8 +23,8 @@ TEST(Server, MapURL) {
 
   std::thread server_thread([&server]() {
     server.MapUrl("/", [](const simple_http_server::Request&) {
-      static constexpr int OK_CODE = 200;
-      return simple_http_server::Response(OK_CODE, "test1234片仮名");
+      return simple_http_server::Response(simple_http_server::Response::OK,
+                                          "test1234片仮名");
     });
 
     server.Start();

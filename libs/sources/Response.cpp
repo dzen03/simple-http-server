@@ -1,6 +1,7 @@
 #include "Response.h"
 
 #include <sstream>
+#include <stdexcept>
 
 #include "Util.h"
 
@@ -9,10 +10,14 @@ namespace simple_http_server {
 Response::Response(int statusCode, std::string body, HeadersMap headers,
                    const std::string& statusMessage)
     : statusCode_(statusCode),
-      statusMessage_(statusMessage.empty() ? defaultMessages_.at(statusCode_)
-                                           : statusMessage),
       headers_(std::move(headers)),
       body_(std::move(body)) {
+  if (statusMessage.empty() && !defaultMessages_.contains(statusCode)) {
+    throw std::runtime_error("no message for error code provided");
+  }
+
+  statusMessage_ = (statusMessage.empty() ? defaultMessages_.at(statusCode_)
+                                          : statusMessage);
   if (!headers_.contains("Content-Length")) {
     headers_.emplace("Content-Length", std::to_string(body_.length()));
   }
