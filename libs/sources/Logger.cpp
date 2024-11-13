@@ -10,6 +10,7 @@ namespace simple_http_server {
 // FIXME(dzen) rewrite this
 // NOLINTNEXTLINE
 std::ofstream Logger::logStream_ = std::ofstream(logFilename);
+// NOLINTNEXTLINE
 Level Logger::logLevel_ = WARNING;
 
 void Logger::Log(Level level, std::ostringstream&& message) {

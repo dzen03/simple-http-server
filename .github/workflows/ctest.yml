@@ -20,7 +20,7 @@ jobs:
 
       - name: Build
         working-directory: ${{runner.workspace}}/build
-        run: cmake --build .
+        run: cmake --build . -j$(nproc)
 
       - name: Test
         working-directory: ${{runner.workspace}}/build
@@ -47,7 +47,7 @@ jobs:
 
       - name: Build
         working-directory: ${{runner.workspace}}\build
-        run: cmake --build . -j3
+        run: cmake --build . -j"$env:NUMBER_OF_PROCESSORS"
 
       - name: Test
         working-directory: ${{runner.workspace}}\build
