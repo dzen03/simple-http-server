@@ -41,7 +41,7 @@ class Logger {
 #undef X
  private:
   static std::ofstream logStream_;  // NOLINT
-  static Level logLevel_;
+  static Level logLevel_;           // NOLINT
 };
 
 }  // namespace simple_http_server
