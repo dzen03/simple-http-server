@@ -11,6 +11,8 @@ TEST(Logger, MainTest) {
   const std::vector<std::pair<Level, std::string>> levels = {
       {DEBUG, "debug"}, {INFO, "info"}, {WARNING, "warning"}, {ERROR, "error"}};
 
+  Logger::SetLevel(DEBUG);
+
   for (const auto& line : levels) {
     LOG(line.first, NAMED_OUTPUT(line.second));
   }

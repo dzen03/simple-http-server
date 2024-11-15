@@ -1,6 +1,6 @@
 #include "Server.h"
 
-#include <sstream>
+#include <regex>
 #include <string>
 #include <unordered_map>
 
@@ -14,8 +14,10 @@
 
 namespace simple_http_server {
 
-Server::Server(const std::string& ip_addr, int port)
-    : socket_(SocketFactory::CreateSocket(ip_addr, port)) {}
+Server::Server(const std::string& ip_addr, int port, Level logLevel)
+    : socket_(SocketFactory::CreateSocket(ip_addr, port)) {
+  Logger::SetLevel(logLevel);
+}
 
 void Server::Start() {
   if (mappedUrls_.empty()) {
@@ -47,7 +49,7 @@ void Server::HandleClient(const ISocket::SocketDescriptor& client_sock) {
     const auto& string_request =
         std::string(received->begin(), received->end());
 
-    LOG(INFO, "got request " << NAMED_OUTPUT(string_request));
+    LOG(DEBUG, "got request " << NAMED_OUTPUT(string_request));
 
     const Request request(string_request);
 
@@ -62,7 +64,8 @@ void Server::HandleClient(const ISocket::SocketDescriptor& client_sock) {
 
       if (first_slash != std::string::npos &&
           mappedDirectories_.contains(url_start)) {
-        auto path = mappedDirectories_.at(url_start);
+        auto dir = mappedDirectories_.at(url_start);
+        auto path = dir.GetPath();
 
         size_t pos = 0;
         size_t prev_pos = first_slash;
@@ -74,15 +77,27 @@ void Server::HandleClient(const ISocket::SocketDescriptor& client_sock) {
 
         path /= request.GetUrl().substr(prev_pos + 1);
 
+        auto type = dir.GetType();
+        bool allowed = (type == Directory::BLACKLIST);
+
+        for (const auto& reg : dir.GetAllowSet()) {
+          if (std::regex_match(path.string(), reg)) {
+            allowed = (type == Directory::WHITELIST);
+          }
+        }
+
+        if (!allowed) {
+          response = Response(Response::HttpStatusCodes::FORBIDDEN);
+        }
+
         if (std::filesystem::exists(path)) {
-          response = Render(path);
+          response = Render(path, "", dir.GetHeaders());
         }
       }
     }
 
     if (response.Empty()) {
-      static constexpr int NOT_FOUND_CODE = 404;
-      response = Response(NOT_FOUND_CODE);
+      response = Response(Response::HttpStatusCodes::NOT_FOUND);
     }
 
     const auto& string_response = response.Dump();
@@ -93,6 +108,19 @@ void Server::HandleClient(const ISocket::SocketDescriptor& client_sock) {
         client_sock);
   } catch (const std::exception& exception) {
     LOG(ERROR, exception.what());
+
+    try {
+      auto response = Response(Response::HttpStatusCodes::INTERNAL_ERROR);
+
+      const auto& string_response = response.Dump();
+
+      socket_->SendMessageAndCloseClient(
+          std::make_unique<ISocket::Message>(
+              ISocket::Message(string_response.begin(), string_response.end())),
+          client_sock);
+    } catch (const std::exception& exception) {
+      LOG(ERROR, exception.what());
+    }
   }
 }
 
@@ -108,25 +136,28 @@ void Server::MapUrl(const std::string& path,
   mappedUrls_.emplace(path, function);
 }
 
-void Server::MapDirectory(const std::string& url,
-                          const std::filesystem::path& directory) {
-  LOG(INFO, "mapping directory " << url << " --> " << directory);
+void Server::MapDirectory(const std::string& url, const Directory& directory) {
+  LOG(INFO, "mapping directory " << url << " --> " << directory.GetPath());
 
   mappedDirectories_.emplace(url, directory);
 }
 
 auto Server::Render(const std::filesystem::path& file,
-                    const std::string& content_type) -> Response {
-  const std::ifstream temp(file);
-  std::stringstream buffer;
-  buffer << temp.rdbuf();  // FIXME(dzen) redundant copy
+                    const std::string& content_type,
+                    HeadersMap headers) -> Response {
+  std::ifstream temp(file, std::ios::binary);
 
-  static constexpr int OK_CODE = 200;
-  return Response(
-      OK_CODE, buffer.str(),
-      {{"Content-Type", content_type.empty()
-                            ? DeduceContentType(file) + "; charset = utf-8"
-                            : content_type}});
+  std::string content((std::istreambuf_iterator<char>(temp)),
+                      std::istreambuf_iterator<char>());
+
+  if (!headers.contains("Content-Type")) {
+    headers.emplace("Content-Type",
+                    content_type.empty()
+                        ? DeduceContentType(file) + "; charset = utf-8"
+                        : content_type);
+  }
+
+  return Response(Response::HttpStatusCodes::OK, std::move(content), headers);
 }
 
 auto Server::DeduceContentType(const std::filesystem::path& path)
