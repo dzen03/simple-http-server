@@ -48,7 +48,7 @@ endif()
 option(USE_CLANG_TIDY "Enable clang tidy" ON)
 set(CLANG_TIDY_NAME "clang-tidy" CACHE STRING "clang-tidy name/verion")
 if(USE_CLANG_TIDY)
-    find_program(CLANG_TIDY CLANG_TIDY_NAME)
+    find_program(CLANG_TIDY "${CLANG_TIDY_NAME}")
 endif()
 
 if(CLANG_TIDY)
