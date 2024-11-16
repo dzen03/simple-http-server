@@ -16,7 +16,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Configure CMake
-        run: cmake -S ${{github.workspace}}/ -B ${{runner.workspace}}/build
+        run: CXX=clang++-19 CC=clang-19 cmake -S ${{github.workspace}}/ -B ${{runner.workspace}}/build -DCLANG_TIDY_NAME=clang-tidy-19
 
       - name: Build
         working-directory: ${{runner.workspace}}/build
@@ -31,7 +31,7 @@ jobs:
         if: failure()
         with:
           name: test_results_xml
-          path: ${{runner.workspace}}/build/test-results/**/*.xml
+          path: ${{runner.workspace}}/build/tests/test-results/**/*.xml
   test-gtest-windows:
     runs-on: [self-hosted, windows]
 
@@ -58,4 +58,4 @@ jobs:
         if: failure()
         with:
           name: test_results_xml
-          path: ${{runner.workspace}}\build\test-results\**\*.xml
+          path: ${{runner.workspace}}\build\tests\test-results\**\*.xml

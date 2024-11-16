@@ -42,6 +42,52 @@ void Server::Start() {
   }
 }
 
+auto Server::TryRenderFile(const Request& request) -> Response {
+  Response response;
+  const auto& first_slash = request.GetUrl().find('/', 1);
+
+  const auto& url_start = request.GetUrl().substr(0, first_slash);
+
+  if (first_slash != std::string::npos &&
+      mappedDirectories_.contains(url_start)) {
+    auto dir = mappedDirectories_.at(url_start);
+    auto path = dir.GetPath();
+
+    size_t pos = 0;
+    size_t prev_pos = first_slash;
+    while ((pos = request.GetUrl().find('/', prev_pos + 1)) !=
+           std::string::npos) {
+      path /= request.GetUrl().substr(prev_pos + 1, pos - prev_pos);
+      prev_pos = pos;
+    }
+
+    path /= request.GetUrl().substr(prev_pos + 1);
+
+    auto check_path = [](const auto& type, const auto& set, const auto& path) {
+      bool allowed = (type == Directory::BLACKLIST);
+      for (const auto& reg : set) {
+        if (std::regex_match(path.string(), reg)) {
+          allowed = (type == Directory::WHITELIST);
+        }
+      }
+      return allowed;
+    };
+
+    bool allowed =
+        check_path(Directory::BLACKLIST, Directory::GetForcedBlacklist(), path);
+
+    allowed =
+        (allowed ? check_path(dir.GetType(), dir.GetAllowSet(), path) : false);
+
+    if (!allowed) {
+      response = Response(Response::HttpStatusCodes::FORBIDDEN);
+    } else if (std::filesystem::exists(path)) {
+      response = Render(path, "", dir.GetHeaders());
+    }
+  }
+  return response;
+}
+
 void Server::HandleClient(const ISocket::SocketDescriptor& client_sock) {
   const auto& received = socket_->ReceiveMessage(client_sock);
 
@@ -58,42 +104,7 @@ void Server::HandleClient(const ISocket::SocketDescriptor& client_sock) {
     if (mappedUrls_.contains(request.GetUrl())) {
       response = mappedUrls_[request.GetUrl()](request);
     } else {
-      const auto& first_slash = request.GetUrl().find('/', 1);
-
-      const auto& url_start = request.GetUrl().substr(0, first_slash);
-
-      if (first_slash != std::string::npos &&
-          mappedDirectories_.contains(url_start)) {
-        auto dir = mappedDirectories_.at(url_start);
-        auto path = dir.GetPath();
-
-        size_t pos = 0;
-        size_t prev_pos = first_slash;
-        while ((pos = request.GetUrl().find('/', prev_pos + 1)) !=
-               std::string::npos) {
-          path /= request.GetUrl().substr(prev_pos + 1, pos - prev_pos);
-          prev_pos = pos;
-        }
-
-        path /= request.GetUrl().substr(prev_pos + 1);
-
-        auto type = dir.GetType();
-        bool allowed = (type == Directory::BLACKLIST);
-
-        for (const auto& reg : dir.GetAllowSet()) {
-          if (std::regex_match(path.string(), reg)) {
-            allowed = (type == Directory::WHITELIST);
-          }
-        }
-
-        if (!allowed) {
-          response = Response(Response::HttpStatusCodes::FORBIDDEN);
-        }
-
-        if (std::filesystem::exists(path)) {
-          response = Render(path, "", dir.GetHeaders());
-        }
-      }
+      response = TryRenderFile(request);
     }
 
     if (response.Empty()) {
