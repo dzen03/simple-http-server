@@ -56,15 +56,11 @@ class Server {
           type_(type),
           allow_set_(std::move(allow_set)) {}
 
-    [[nodiscard]] auto GetPath() const -> decltype(auto) { return path_; }
-    [[nodiscard]] auto GetHeaders() const -> decltype(auto) { return headers_; }
-    [[nodiscard]] auto GetType() const -> decltype(auto) { return type_; }
-    [[nodiscard]] auto GetAllowSet() const -> decltype(auto) {
-      return allow_set_;
-    }
-    [[nodiscard]] auto static GetForcedBlacklist() -> decltype(auto) {
-      return forced_blacklist_;
-    }
+    [[nodiscard]] auto GetPath() const { return path_; }
+    [[nodiscard]] auto GetHeaders() const { return headers_; }
+    [[nodiscard]] auto GetType() const { return type_; }
+    [[nodiscard]] auto GetAllowSet() const { return allow_set_; }
+    [[nodiscard]] auto static GetForcedBlacklist() { return forced_blacklist_; }
   };
 
   void Start();
