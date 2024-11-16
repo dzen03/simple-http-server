@@ -44,6 +44,8 @@ class Server {
     AllowType type_;
 
     std::vector<std::regex> allow_set_;
+    inline static const std::vector<std::regex> forced_blacklist_ = {
+        std::regex("^.*\\.\\..*$")};
 
    public:
     explicit Directory(std::filesystem::path path, HeadersMap headers = {},
@@ -59,6 +61,9 @@ class Server {
     [[nodiscard]] auto GetType() const -> decltype(auto) { return type_; }
     [[nodiscard]] auto GetAllowSet() const -> decltype(auto) {
       return allow_set_;
+    }
+    [[nodiscard]] auto static GetForcedBlacklist() -> decltype(auto) {
+      return forced_blacklist_;
     }
   };
 
@@ -83,6 +88,8 @@ class Server {
   volatile std::atomic<bool> running_;
 
   void HandleClient(const ISocket::SocketDescriptor& client_sock);
+
+  auto TryRenderFile(const Request& request) -> Response;
 };
 
 }  // namespace simple_http_server
