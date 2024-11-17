@@ -1,3 +1,4 @@
+#include "Directory.h"
 #include "Logger.h"
 #include "Response.h"
 #include "Server.h"
@@ -17,10 +18,10 @@ auto main() -> int {
     return simple_http_server::Server::Render("index.html");
   });
 
-  server.MapDirectory(
-      "/dir", simple_http_server::Server::Directory(
-                  "./", {}, simple_http_server::Server::Directory::WHITELIST,
-                  {std::regex("^.*.log$")}));
+  server.MapDirectory("/dir",
+                      simple_http_server::Directory(
+                          "./", {}, simple_http_server::Directory::WHITELIST,
+                          {std::regex("^.*.log$")}));
 
   server.Start();
 

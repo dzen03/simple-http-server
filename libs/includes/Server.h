@@ -2,14 +2,13 @@
 #define SIMPLE_HTTP_SERVER_LIBS_SERVER_H_
 
 #include <atomic>
-#include <cstdint>
 #include <filesystem>
 #include <functional>
-#include <regex>
 #include <string>
 #include <unordered_map>
 
 #include "DefineSystem.h"
+#include "Directory.h"
 #include "ISocket.h"
 #include "Logger.h"
 #include "Request.h"
@@ -32,36 +31,6 @@ class Server {
   auto operator=(Server& other) = delete;
   Server(Server&& server) = delete;
   auto operator=(Server&& other) = delete;
-
-  class Directory {
-   public:
-    enum AllowType : std::uint8_t { BLACKLIST, WHITELIST };
-
-   private:
-    std::filesystem::path path_;
-    HeadersMap headers_;
-
-    AllowType type_;
-
-    std::vector<std::regex> allow_set_;
-    inline static const std::vector<std::regex> forced_blacklist_ = {
-        std::regex("^.*\\.\\..*$")};
-
-   public:
-    explicit Directory(std::filesystem::path path, HeadersMap headers = {},
-                       AllowType type = BLACKLIST,
-                       std::vector<std::regex> allow_set = {})
-        : path_(std::move(path)),
-          headers_(std::move(headers)),
-          type_(type),
-          allow_set_(std::move(allow_set)) {}
-
-    [[nodiscard]] auto GetPath() const { return path_; }
-    [[nodiscard]] auto GetHeaders() const { return headers_; }
-    [[nodiscard]] auto GetType() const { return type_; }
-    [[nodiscard]] auto GetAllowSet() const { return allow_set_; }
-    [[nodiscard]] auto static GetForcedBlacklist() { return forced_blacklist_; }
-  };
 
   void Start();
   void Stop();

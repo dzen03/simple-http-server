@@ -1,6 +1,7 @@
 #include "Request.h"
 
 #include <sstream>
+#include <string>
 
 #include "Logger.h"
 #include "Util.h"
@@ -36,6 +37,34 @@ auto Request::ParseArguments(const std::string& url_with_args) -> ArgumentsMap {
   return ret;
 }
 
+namespace {
+// only works with ascii-encoded urls
+auto HexToDec(const std::string& hex) {
+  std::istringstream tmp(hex);
+  int res = 0;
+
+  tmp >> std::hex >> res;
+
+  return static_cast<char>(res);
+}
+}  // namespace
+
+auto Request::DecodeURL(std::string& url_with_args) {
+  std::string res;
+  res.reserve(url_with_args.length());
+
+  for (std::string::size_type it = 0; it < url_with_args.length(); ++it) {
+    if (url_with_args[it] == '%' && it < url_with_args.length() - 3) {
+      res += HexToDec({url_with_args[it + 1], url_with_args[it + 2]});
+      it += 2;
+    } else {
+      res += url_with_args[it];
+    }
+  }
+
+  return res;
+}
+
 Request::Request(const std::string& stringRequest) {
   std::istringstream req(stringRequest);
 
@@ -54,6 +83,8 @@ Request::Request(const std::string& stringRequest) {
   std::string url_with_args;
 
   req >> url_with_args >> httpVersion_;
+
+  url_with_args = DecodeURL(url_with_args);
 
   url_ = url_with_args.substr(0, url_with_args.find('?'));
   arguments_ = ParseArguments(url_with_args);
