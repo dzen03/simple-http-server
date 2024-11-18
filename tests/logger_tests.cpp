@@ -1,6 +1,9 @@
 #include <gtest/gtest.h>
 
 #include <fstream>
+#include <string>
+#include <utility>
+#include <vector>
 
 #include "Logger.h"
 

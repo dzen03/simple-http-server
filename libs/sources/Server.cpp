@@ -1,8 +1,17 @@
 #include "Server.h"
 
+#include <exception>
+#include <filesystem>
+#include <fstream>
+#include <functional>
+#include <ios>
+#include <iterator>
+#include <memory>
 #include <regex>
 #include <string>
+#include <thread>
 #include <unordered_map>
+#include <utility>
 
 #include "Directory.h"
 #include "ISocket.h"
@@ -54,8 +63,8 @@ auto Server::TryRenderFile(const Request& request) -> Response {
     auto dir = mappedDirectories_.at(url_start);
     auto path = dir.GetPath();
 
-    size_t pos = 0;
-    size_t prev_pos = first_slash;
+    std::string::size_type pos = 0;
+    auto prev_pos = first_slash;
     while ((pos = request.GetUrl().find('/', prev_pos + 1)) !=
            std::string::npos) {
       path /= request.GetUrl().substr(prev_pos + 1, pos - prev_pos);
@@ -89,6 +98,31 @@ auto Server::TryRenderFile(const Request& request) -> Response {
   return response;
 }
 
+auto Server::TryMappedUrls(const Request& request) -> Response {
+  Response response;
+
+  const auto& url = request.GetUrl();
+  auto current_slash = url.find('/');
+
+  while (current_slash != std::string::npos) {
+    current_slash = url.find('/', current_slash + 1);
+    const auto& sub_url = url.substr(0, current_slash);
+
+    if (mappedUrls_.contains(sub_url)) {
+      const auto& url = mappedUrls_.at(sub_url);
+
+      if (url.second /*include_children*/ ||
+          current_slash == std::string::npos) {
+        // if allowed subdirs or full path used
+        response = url.first(request);
+        break;
+      }
+    }
+  }
+
+  return response;
+}
+
 void Server::HandleClient(const ISocket::SocketDescriptor& client_sock) {
   const auto& received = socket_->ReceiveMessage(client_sock);
 
@@ -102,9 +136,9 @@ void Server::HandleClient(const ISocket::SocketDescriptor& client_sock) {
 
     Response response;
 
-    if (mappedUrls_.contains(request.GetUrl())) {
-      response = mappedUrls_[request.GetUrl()](request);
-    } else {
+    response = TryMappedUrls(request);
+
+    if (response.Empty()) {
       response = TryRenderFile(request);
     }
 
@@ -139,16 +173,21 @@ void Server::HandleClient(const ISocket::SocketDescriptor& client_sock) {
 void Server::Stop() { running_ = false; }
 
 void Server::MapUrl(const std::string& path,
-                    const std::function<Response(Request)>& function) {
+                    const std::function<Response(Request)>& function,
+                    bool include_children) {
   if (mappedUrls_.contains(path)) {
     LOG(WARNING, "remapping url " << NAMED_OUTPUT(path));
   }
-  LOG(INFO, "mapping URL " << NAMED_OUTPUT(path));
+  LOG(INFO, "mapping URL " << NAMED_OUTPUT(path) << " "
+                           << NAMED_OUTPUT(include_children));
 
-  mappedUrls_.emplace(path, function);
+  mappedUrls_.emplace(path, std::make_pair(function, include_children));
 }
 
 void Server::MapDirectory(const std::string& url, const Directory& directory) {
+  if (mappedUrls_.contains(url)) {
+    LOG(WARNING, "remapping directory " << NAMED_OUTPUT(url));
+  }
   LOG(INFO, "mapping directory " << url << " --> " << directory.GetPath());
 
   mappedDirectories_.emplace(url, directory);

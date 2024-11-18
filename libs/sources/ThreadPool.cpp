@@ -1,14 +1,16 @@
 #include "ThreadPool.h"
 
 #include <condition_variable>
+#include <cstdint>
 #include <functional>
 #include <mutex>
 #include <queue>
 #include <thread>
+#include <utility>
 #include <vector>
 
-ThreadPool::ThreadPool(size_t numThreads) {
-  for (size_t i = 0; i < numThreads; ++i) {
+ThreadPool::ThreadPool(std::uint64_t numThreads) {
+  for (decltype(numThreads) i = 0; i < numThreads; ++i) {
     workers_.emplace_back([this] { workerThread(); });
   }
 }

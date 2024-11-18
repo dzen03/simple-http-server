@@ -36,7 +36,8 @@ class Server {
   void Stop();
 
   void MapUrl(const std::string& path,
-              const std::function<Response(Request)>& function);
+              const std::function<Response(Request)>& function,
+              bool include_children = false);
   void MapDirectory(const std::string& url, const Directory& directory);
 
   static auto Render(const std::filesystem::path& file,
@@ -48,12 +49,15 @@ class Server {
 
  private:
   std::unique_ptr<ISocket> socket_;
-  std::unordered_map<std::string, std::function<Response(Request)>> mappedUrls_;
+  std::unordered_map<std::string,
+                     std::pair<std::function<Response(Request)>, bool>>
+      mappedUrls_;
   std::unordered_map<std::string, Directory> mappedDirectories_;
   volatile std::atomic<bool> running_;
 
   void HandleClient(const ISocket::SocketDescriptor& client_sock);
 
+  auto TryMappedUrls(const Request& request) -> Response;
   auto TryRenderFile(const Request& request) -> Response;
 };
 

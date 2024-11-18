@@ -10,4 +10,3 @@ portability-*
 readability-*
 
 -cppcoreguidelines-pro-type-reinterpret-cast
--misc-include-cleaner
