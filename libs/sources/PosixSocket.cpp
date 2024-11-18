@@ -3,7 +3,7 @@
 #ifdef POSIX
 
 #include <netdb.h>
-#include <netinet/in.h>
+#include <netinet/in.h>  // NOLINT(misc-include-cleaner)
 #include <sys/socket.h>
 #include <unistd.h>
 

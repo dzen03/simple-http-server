@@ -14,9 +14,12 @@
 #define SIMPLE_HTTP_SERVER_LIBS_POSIXSOCKET_H_USELESS_DEFINE  // same
 #undef SIMPLE_HTTP_SERVER_LIBS_POSIXSOCKET_H_USELESS_DEFINE   //
 
+#include <minwindef.h>
+#include <windows.h>
 #include <ws2tcpip.h>
 
 #include <memory>
+#include <stdexcept>
 #include <string>
 #include <vector>
 
