@@ -22,6 +22,7 @@ class Request {
 
  private:
   static auto ParseArguments(const std::string& url_with_args) -> ArgumentsMap;
+  static auto DecodeURL(std::string& url_with_args);
 
   Type type_ = UNKNOWN;
   std::string url_;

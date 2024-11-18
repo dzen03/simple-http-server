@@ -44,6 +44,26 @@ TEST(Request, ParseWithArguments) {
   EXPECT_EQ(parsed.GetBody(), "");
 }
 
+TEST(Request, ParseDecoded) {
+  auto parsed = Request(
+      "GET /home%2ehtml?%61=b%20%62&c=d HTTP/1.1\r\n"
+      "Host: developer.mozilla.org\r\n"
+      "User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.9; rv:50.0) "
+      "Gecko/20100101 Firefox/50.0\r\n"
+      "\r\n");
+
+  EXPECT_EQ(parsed.GetType(), Request::GET);
+  EXPECT_EQ(parsed.GetUrl(), "/home.html");
+  EXPECT_EQ(parsed.GetArguments(), ArgumentsMap({{"a", "b b"}, {"c", "d"}}));
+  EXPECT_EQ(parsed.GetHttpVersion(), "HTTP/1.1");
+  EXPECT_EQ(parsed.GetHeaders(),
+            HeadersMap({{"Host", "developer.mozilla.org"},
+                        {"User-Agent",
+                         "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.9; "
+                         "rv:50.0) Gecko/20100101 Firefox/50.0"}}));
+  EXPECT_EQ(parsed.GetBody(), "");
+}
+
 TEST(Request, ParseInvalidHeaders) {
   auto parsed = Request(
       "CONNECT google.com HTTP/1.1\r\n"

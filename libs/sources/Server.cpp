@@ -4,6 +4,7 @@
 #include <string>
 #include <unordered_map>
 
+#include "Directory.h"
 #include "ISocket.h"
 #include "Logger.h"
 #include "Request.h"
