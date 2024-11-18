@@ -15,13 +15,15 @@
 #undef SIMPLE_HTTP_SERVER_LIBS_POSIXSOCKET_H_USELESS_DEFINE   //
 
 #include <minwindef.h>
-#include <windows.h>
 #include <ws2tcpip.h>
 
 #include <memory>
 #include <stdexcept>
 #include <string>
 #include <vector>
+
+// I have no idea, where SOCKET_ERROR, etc defined, so
+// NOLINTBEGIN(misc-include-cleaner)
 
 namespace simple_http_server {
 
@@ -124,5 +126,7 @@ auto WindowsSocket::CreateAddress(const std::string& address, int port,
 }
 
 }  // namespace simple_http_server
+
+// NOLINTEND(misc-include-cleaner)
 
 #endif  // WINDOWS
