@@ -10,3 +10,4 @@ portability-*
 readability-*
 
 -cppcoreguidelines-pro-type-reinterpret-cast
+-cppcoreguidelines-avoid-non-const-global-variables

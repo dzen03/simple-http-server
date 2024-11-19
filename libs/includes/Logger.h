@@ -30,25 +30,24 @@ enum Level : std::uint8_t { LOGGER_LEVELS };
 
 class Logger {
  public:
-  static void Log(Level level, std::ostringstream&& message);
-
 // NOLINTNEXTLINE(cppcoreguidelines-macro-usage)
 #define X(level, name, _) name,
   inline static const std::vector<char const*> level_name = {LOGGER_LEVELS};
 #undef X
  private:
-  static std::filesystem::path logFilename_;  // NOLINT FIXME(dzen) rewrite this
-  static std::ofstream logStream_;            // NOLINT
-  static Level logLevel_;                     // NOLINT
+  static std::filesystem::path logFilename_;
+  static std::ofstream logStream_;
+  static Level logLevel_;
+  static bool isInit_;
+
  public:
-  static void Flush() { logStream_.flush(); }
-  static void SetLevel(Level newLevel) { logLevel_ = newLevel; }
-  static auto GetFilename() { return logFilename_; }
-  static void SetFilename(const std::filesystem::path& newFilename) {
-    logFilename_ = newFilename;
-    logStream_.close();
-    logStream_ = std::ofstream(logFilename_);
-  }
+  static void Init();
+
+  static void Flush();
+  static void SetLevel(Level newLevel);
+  static auto GetFilename() { return Logger::logFilename_; }
+  static void SetFilename(const std::filesystem::path& newFilename);
+  static void Log(Level level, std::ostringstream&& message);
 };
 
 }  // namespace simple_http_server
