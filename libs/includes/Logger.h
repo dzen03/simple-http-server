@@ -37,7 +37,7 @@ class Logger {
   inline static const std::vector<char const*> level_name = {LOGGER_LEVELS};
 #undef X
  private:
-  static std::filesystem::path logFilename_;  // FIXME(dzen) rewrite this
+  static std::filesystem::path logFilename_;  // NOLINT FIXME(dzen) rewrite this
   static std::ofstream logStream_;            // NOLINT
   static Level logLevel_;                     // NOLINT
  public:
