@@ -46,7 +46,7 @@ WindowsSocket::WindowsSocket(const std::string& address, int port) {
 WindowsSocket::~WindowsSocket() {
   closesocket(socketDescriptor_);
   freeaddrinfo(address_);
-  WSACleanup();
+  // WSACleanup(); TODO(dzen) move to Server destructor
 }
 
 auto WindowsSocket::BindAndListen() -> bool {
