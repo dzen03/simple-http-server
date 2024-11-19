@@ -2,6 +2,7 @@
 
 #include <chrono>
 #include <ctime>
+#include <filesystem>
 #include <fstream>
 #include <iomanip>
 #include <sstream>
@@ -11,7 +12,9 @@ namespace simple_http_server {
 
 // FIXME(dzen) rewrite this
 // NOLINTNEXTLINE
-std::ofstream Logger::logStream_ = std::ofstream(logFilename);
+std::filesystem::path Logger::logFilename_ = "./server.log";
+// NOLINTNEXTLINE
+std::ofstream Logger::logStream_ = std::ofstream(logFilename_);
 // NOLINTNEXTLINE
 Level Logger::logLevel_ = WARNING;
 
@@ -29,9 +32,5 @@ void Logger::Log(Level level, std::ostringstream&& message) {
   // TODO(dzen) think about flush(); probably should use Flush() each N lines
   // TODO(dzen) add log rotation
 }
-
-void Logger::Flush() { logStream_.flush(); }
-
-void Logger::SetLevel(Level newLevel) { logLevel_ = newLevel; }
 
 }  // namespace simple_http_server
