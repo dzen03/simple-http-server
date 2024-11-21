@@ -1,6 +1,9 @@
 #include <gtest/gtest.h>
 
 #include <fstream>
+#include <string>
+#include <utility>
+#include <vector>
 
 #include "Logger.h"
 
@@ -11,6 +14,7 @@ TEST(Logger, MainTest) {
   const std::vector<std::pair<Level, std::string>> levels = {
       {DEBUG, "debug"}, {INFO, "info"}, {WARNING, "warning"}, {ERROR, "error"}};
 
+  Logger::SetFilename("./logger_test.log");
   Logger::SetLevel(DEBUG);
 
   for (const auto& line : levels) {
@@ -19,7 +23,7 @@ TEST(Logger, MainTest) {
 
   Logger::Flush();
 
-  std::ifstream log(Logger::logFilename);
+  std::ifstream log(Logger::GetFilename());
 
   std::string time;
   std::string level;

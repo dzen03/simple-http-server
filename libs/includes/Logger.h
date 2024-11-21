@@ -2,6 +2,7 @@
 #define SIMPLE_HTTP_SERVER_LIBS_LOGGER_H_
 
 #include <cstdint>
+#include <filesystem>
 #include <fstream>
 #include <sstream>
 #include <vector>
@@ -29,19 +30,24 @@ enum Level : std::uint8_t { LOGGER_LEVELS };
 
 class Logger {
  public:
-  static constexpr auto logFilename = "server.log";  // FIXME(dzen) rewrite this
-
-  static void Log(Level level, std::ostringstream&& message);
-  static void Flush();
-  static void SetLevel(Level newLevel);
-
 // NOLINTNEXTLINE(cppcoreguidelines-macro-usage)
 #define X(level, name, _) name,
   inline static const std::vector<char const*> level_name = {LOGGER_LEVELS};
 #undef X
  private:
-  static std::ofstream logStream_;  // NOLINT
-  static Level logLevel_;           // NOLINT
+  static std::filesystem::path logFilename_;
+  static std::ofstream logStream_;
+  static Level logLevel_;
+  static bool isInit_;
+
+ public:
+  static void Init();
+
+  static void Flush();
+  static void SetLevel(Level newLevel);
+  static auto GetFilename() { return Logger::logFilename_; }
+  static void SetFilename(const std::filesystem::path& newFilename);
+  static void Log(Level level, std::ostringstream&& message);
 };
 
 }  // namespace simple_http_server

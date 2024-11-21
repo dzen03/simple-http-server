@@ -14,11 +14,16 @@
 #define SIMPLE_HTTP_SERVER_LIBS_POSIXSOCKET_H_USELESS_DEFINE  // same
 #undef SIMPLE_HTTP_SERVER_LIBS_POSIXSOCKET_H_USELESS_DEFINE   //
 
+#include <minwindef.h>
 #include <ws2tcpip.h>
 
 #include <memory>
+#include <stdexcept>
 #include <string>
 #include <vector>
+
+// I have no idea, where SOCKET_ERROR, etc defined, so
+// NOLINTBEGIN(misc-include-cleaner)
 
 namespace simple_http_server {
 
@@ -41,7 +46,7 @@ WindowsSocket::WindowsSocket(const std::string& address, int port) {
 WindowsSocket::~WindowsSocket() {
   closesocket(socketDescriptor_);
   freeaddrinfo(address_);
-  WSACleanup();
+  // WSACleanup(); TODO(dzen) move to Server destructor
 }
 
 auto WindowsSocket::BindAndListen() -> bool {
@@ -121,5 +126,7 @@ auto WindowsSocket::CreateAddress(const std::string& address, int port,
 }
 
 }  // namespace simple_http_server
+
+// NOLINTEND(misc-include-cleaner)
 
 #endif  // WINDOWS

@@ -2,13 +2,13 @@
 
 #ifdef POSIX
 
-#include <arpa/inet.h>
 #include <netdb.h>
-#include <netinet/in.h>
+#include <netinet/in.h>  // NOLINT(misc-include-cleaner)
 #include <sys/socket.h>
 #include <unistd.h>
 
 #include <memory>
+#include <stdexcept>
 #include <string>
 #include <vector>
 

@@ -1,6 +1,7 @@
 #include "SocketFactory.h"
 
 #include <memory>
+#include <string>
 
 #include "DefineSystem.h"
 #include "ISocket.h"

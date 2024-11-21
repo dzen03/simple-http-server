@@ -1,5 +1,6 @@
 #include "Request.h"
 
+#include <ios>
 #include <sstream>
 #include <string>
 

@@ -30,7 +30,7 @@ jobs:
         uses: actions/upload-artifact@v4
         if: failure()
         with:
-          name: test_results_xml
+          name: linux_test_results_xml
           path: ${{runner.workspace}}/build/tests/test-results/**/*.xml
   test-gtest-windows:
     runs-on: [self-hosted, windows]
@@ -57,5 +57,5 @@ jobs:
         uses: actions/upload-artifact@v4
         if: failure()
         with:
-          name: test_results_xml
+          name: windows_test_results_xml
           path: ${{runner.workspace}}\build\tests\test-results\**\*.xml

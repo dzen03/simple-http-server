@@ -1,6 +1,9 @@
 #include <gtest/gtest.h>
 
+#include <memory>
+#include <string>
 #include <thread>
+#include <vector>
 
 #include "ISocket.h"
 #include "SocketFactory.h"

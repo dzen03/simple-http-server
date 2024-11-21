@@ -7,7 +7,7 @@
 
 class ThreadPool {
  public:
-  explicit ThreadPool(size_t numThreads);
+  explicit ThreadPool(std::uint64_t numThreads);
   ~ThreadPool();
 
   ThreadPool(const ThreadPool& server) = delete;

@@ -17,5 +17,14 @@ foreach(test_source IN LISTS test_sources)
     add_executable(test_${name} ${test_source})
     target_link_libraries(test_${name} PRIVATE simple-http-server-sources GTest::gtest_main)
 
-    gtest_discover_tests(test_${name})
+    # gtest_discover_tests(test_${name})
+    add_test(NAME ${name} COMMAND test_${name})
 endforeach()
+
+# Create a single test executable for all tests
+add_executable(all_tests ${test_sources})
+target_link_libraries(all_tests PRIVATE simple-http-server-sources GTest::gtest_main)
+
+# Discover all tests in the single executable
+# gtest_discover_tests(all_tests DISCOVERY_MODE PRE_TEST)
+# add_test(NAME "tests" COMMAND all_tests)
