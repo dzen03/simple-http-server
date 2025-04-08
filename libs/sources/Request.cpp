@@ -16,7 +16,8 @@ auto Request::ParseArguments(const std::string& url_with_args) -> ArgumentsMap {
 
   auto next_arg = args_start;
 
-  auto parse_argument = [&ret, &url_with_args](auto current_arg) mutable {
+  auto parse_argument = [&ret,
+                         &url_with_args](auto current_arg) mutable -> auto {
     auto sep = url_with_args.find('=', current_arg);
     auto next_arg = url_with_args.find('&', current_arg + 1);
 
@@ -55,11 +56,11 @@ auto Request::DecodeURL(std::string& url_with_args) {
   res.reserve(url_with_args.length());
 
   for (std::string::size_type it = 0; it < url_with_args.length(); ++it) {
-    if (url_with_args[it] == '%' && it < url_with_args.length() - 3) {
-      res += HexToDec({url_with_args[it + 1], url_with_args[it + 2]});
+    if (url_with_args.at(it) == '%' && it < url_with_args.length() - 3) {
+      res += HexToDec({url_with_args.at(it + 1), url_with_args.at(it + 2)});
       it += 2;
     } else {
-      res += url_with_args[it];
+      res += url_with_args.at(it);
     }
   }
 

@@ -13,7 +13,7 @@ TEST(Request, Parse) {
       "\r\n"
       "field1=value1&field2=value2");
 
-  EXPECT_EQ(parsed.GetType(), Request::POST);
+  EXPECT_EQ(parsed.GetType(), Request::Type::POST);
   EXPECT_EQ(parsed.GetUrl(), "/home.html");
   EXPECT_EQ(parsed.GetArguments(), ArgumentsMap());
   EXPECT_EQ(parsed.GetHttpVersion(), "HTTP/1.1");
@@ -32,7 +32,7 @@ TEST(Request, ParseWithArguments) {
       "Gecko/20100101 Firefox/50.0\r\n"
       "\r\n");
 
-  EXPECT_EQ(parsed.GetType(), Request::GET);
+  EXPECT_EQ(parsed.GetType(), Request::Type::GET);
   EXPECT_EQ(parsed.GetUrl(), "/home.html");
   EXPECT_EQ(parsed.GetArguments(), ArgumentsMap({{"a", "b"}, {"c", "d"}}));
   EXPECT_EQ(parsed.GetHttpVersion(), "HTTP/1.1");
@@ -52,7 +52,7 @@ TEST(Request, ParseDecoded) {
       "Gecko/20100101 Firefox/50.0\r\n"
       "\r\n");
 
-  EXPECT_EQ(parsed.GetType(), Request::GET);
+  EXPECT_EQ(parsed.GetType(), Request::Type::GET);
   EXPECT_EQ(parsed.GetUrl(), "/home.html");
   EXPECT_EQ(parsed.GetArguments(), ArgumentsMap({{"a", "b b"}, {"c", "d"}}));
   EXPECT_EQ(parsed.GetHttpVersion(), "HTTP/1.1");
@@ -71,7 +71,7 @@ TEST(Request, ParseInvalidHeaders) {
       "User-Agent: \r\n"
       "\r\n");
 
-  EXPECT_EQ(parsed.GetType(), Request::UNKNOWN);
+  EXPECT_EQ(parsed.GetType(), Request::Type::UNKNOWN);
   EXPECT_EQ(parsed.GetUrl(), "google.com");
   EXPECT_EQ(parsed.GetArguments(), ArgumentsMap({}));
   EXPECT_EQ(parsed.GetHttpVersion(), "HTTP/1.1");
@@ -88,7 +88,7 @@ TEST(Request, ParseInvalidHeadersWithValid) {
       "(KHTML, like Gecko) Chrome/55.0.2883.87 Safari/537.36\r\n"
       "\r\n");
 
-  EXPECT_EQ(parsed.GetType(), Request::GET);
+  EXPECT_EQ(parsed.GetType(), Request::Type::GET);
   EXPECT_EQ(parsed.GetUrl(), "/manager/html");
   EXPECT_EQ(parsed.GetArguments(), ArgumentsMap({}));
   EXPECT_EQ(parsed.GetHttpVersion(), "HTTP/1.1");

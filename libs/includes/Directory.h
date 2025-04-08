@@ -11,7 +11,7 @@ namespace simple_http_server {
 
 class Directory {
  public:
-  enum AllowType : std::uint8_t { BLACKLIST, WHITELIST };
+  enum class AllowType : std::uint8_t { BLACKLIST, WHITELIST };
 
  private:
   std::filesystem::path path_;
@@ -20,12 +20,14 @@ class Directory {
   AllowType type_;
 
   std::vector<std::regex> allow_set_;
+
+  // NOLINTNEXTLINE(bugprone-throwing-static-initialization)
   inline static const std::vector<std::regex> forced_blacklist_ = {
       std::regex("^.*\\.\\..*$")};  // to block path traversal
 
  public:
   explicit Directory(std::filesystem::path path, HeadersMap headers = {},
-                     AllowType type = BLACKLIST,
+                     AllowType type = AllowType::BLACKLIST,
                      std::vector<std::regex> allow_set = {})
       : path_(std::move(path)),
         headers_(std::move(headers)),

@@ -1,13 +1,14 @@
 #include <gtest/gtest.h>
 
+#include <array>
 #include <chrono>
 #include <iostream>
 #include <memory>
 #include <random>
 #include <string>
+#include <string_view>
 #include <thread>
 #include <utility>
-#include <vector>
 
 #include "Logger.h"
 #include "Request.h"
@@ -18,11 +19,10 @@
 namespace simple_http_server {
 
 namespace {
-const std::vector<std::string> results = {
+constexpr std::array<std::string_view, 2> results = {
     "HTTP/1.1 200 OK\r\nConnection: close\r\nContent-Length: "
     "17\r\n\r\ntest1234片仮名",
     "HTTP/1.1 404 Not Found\r\nConnection: close\r\nContent-Length: 0\r\n\r\n"};
-}  // namespace
 
 class ServerTest : public testing::TestWithParam<std::pair<std::string, int>> {
  protected:
@@ -44,17 +44,17 @@ class ServerTest : public testing::TestWithParam<std::pair<std::string, int>> {
 
     server = new Server("127.0.0.1", port);  // NOLINT
 
-    server_thread = std::thread([]() {
+    server_thread = std::thread([]() -> auto {
       server->MapUrl(
           "/true",
-          [](const simple_http_server::Request&) {
+          [](const simple_http_server::Request&) -> auto {
             return simple_http_server::Response(
                 simple_http_server::Response::OK, "test1234片仮名");
           },
           true);
       server->MapUrl(
           "/false",
-          [](const simple_http_server::Request&) {
+          [](const simple_http_server::Request&) -> auto {
             return simple_http_server::Response(
                 simple_http_server::Response::OK, "test1234片仮名");
           },
@@ -98,7 +98,7 @@ TEST_P(ServerTest, TestMappings) {
   EXPECT_FALSE(resp->empty());
 
   EXPECT_EQ(std::string(resp->begin(), resp->end()),
-            results[GetParam().second]);
+            results.at(GetParam().second));
 }
 
 INSTANTIATE_TEST_SUITE_P(, ServerTest,
@@ -107,4 +107,5 @@ INSTANTIATE_TEST_SUITE_P(, ServerTest,
                                          std::make_pair("/true/1234", 0),
                                          std::make_pair("/false/1234", 1)));
 
+}  // namespace
 }  // namespace simple_http_server

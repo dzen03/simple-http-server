@@ -44,7 +44,8 @@ void Server::Start() {
     try {
       const auto& client_sock = socket_->Accept();
 
-      threadPool.enqueue([this, client_sock]() { HandleClient(client_sock); });
+      threadPool.enqueue(
+          [this, client_sock]() -> auto { HandleClient(client_sock); });
 
     } catch (const std::exception& exception) {
       LOG(ERROR, exception.what());
@@ -73,18 +74,19 @@ auto Server::TryRenderFile(const Request& request) -> Response {
 
     path /= request.GetUrl().substr(prev_pos + 1);
 
-    auto check_path = [](const auto& type, const auto& set, const auto& path) {
-      bool allowed = (type == Directory::BLACKLIST);
+    auto check_path = [](const auto& type, const auto& set,
+                         const auto& path) -> auto {
+      bool allowed = (type == Directory::AllowType::BLACKLIST);
       for (const auto& reg : set) {
         if (std::regex_match(path.string(), reg)) {
-          allowed = (type == Directory::WHITELIST);
+          allowed = (type == Directory::AllowType::WHITELIST);
         }
       }
       return allowed;
     };
 
-    bool allowed =
-        check_path(Directory::BLACKLIST, Directory::GetForcedBlacklist(), path);
+    bool allowed = check_path(Directory::AllowType::BLACKLIST,
+                              Directory::GetForcedBlacklist(), path);
 
     allowed =
         (allowed ? check_path(dir.GetType(), dir.GetAllowSet(), path) : false);

@@ -8,7 +8,7 @@
 
 #ifdef POSIX
 #include "Socket/PosixSocket.h"
-#elif defined WINDOWS
+#elifdef WINDOWS
 #include "Socket/WindowsSocket.h"
 #else
 #error Unknown platform
@@ -20,7 +20,7 @@ auto SocketFactory::CreateSocket(const std::string& address, int port)
     -> std::unique_ptr<ISocket> {
 #ifdef POSIX
   return std::make_unique<PosixSocket>(address, port);
-#elif defined WINDOWS
+#elifdef WINDOWS
   return std::make_unique<WindowsSocket>(address, port);
 #else
 #error Unknown platform

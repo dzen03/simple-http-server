@@ -1,7 +1,6 @@
 #include "Response.h"
 
 #include <sstream>
-#include <stdexcept>
 #include <string>
 #include <utility>
 
@@ -14,12 +13,8 @@ Response::Response(int statusCode, std::string body, HeadersMap headers,
     : statusCode_(statusCode),
       headers_(std::move(headers)),
       body_(std::move(body)) {
-  if (statusMessage.empty() && !defaultMessages_.contains(statusCode)) {
-    throw std::runtime_error("no message for error code provided");
-  }
-
-  statusMessage_ = (statusMessage.empty() ? defaultMessages_.at(statusCode_)
-                                          : statusMessage);
+  statusMessage_ =
+      (statusMessage.empty() ? defaultMessage(statusCode_) : statusMessage);
   if (!headers_.contains("Content-Length")) {
     headers_.emplace("Content-Length", std::to_string(body_.length()));
   }

@@ -10,7 +10,9 @@
 
 namespace simple_http_server {
 
+// NOLINTNEXTLINE(bugprone-throwing-static-initialization)
 std::filesystem::path Logger::logFilename_ = "./server.log";
+// NOLINTNEXTLINE(bugprone-throwing-static-initialization)
 std::ofstream Logger::logStream_;
 Level Logger::logLevel_ = WARNING;
 bool Logger::isInit_ = false;
@@ -44,7 +46,7 @@ void Logger::Log(Level level, std::ostringstream&& message) {
   const time_t now =
       std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
   Logger::logStream_ << std::put_time(std::localtime(&now), "%Y-%m-%d@%H:%M:%S")
-                     << " " << level_name[level] << " "
+                     << " " << level_name.at(level) << " "
                      << std::move(message).str() << "\n";
   Flush();
   // TODO(dzen) think about flush(); probably should use Flush() each N lines

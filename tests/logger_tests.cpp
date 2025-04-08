@@ -32,7 +32,7 @@ TEST(Logger, MainTest) {
 
   for (const auto& line : levels) {
     log >> time >> level >> messageKey >> messageValue;
-    EXPECT_EQ(level, Logger::level_name[line.first]);
+    EXPECT_EQ(level, Logger::level_name.at(line.first));
     EXPECT_EQ(messageKey, "line.second:");
     EXPECT_EQ(messageValue, line.second);
   }
