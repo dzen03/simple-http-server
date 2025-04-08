@@ -4,20 +4,20 @@
 #include <string>
 
 #include "DefineSystem.h"
-#include "ISocket.h"
+#include "Socket/ISocket.h"
 
 #ifdef POSIX
-#include "PosixSocket.h"
+#include "Socket/PosixSocket.h"
 #elif defined WINDOWS
-#include "WindowsSocket.h"
+#include "Socket/WindowsSocket.h"
 #else
 #error Unknown platform
 #endif
 
 namespace simple_http_server {
 
-auto SocketFactory::CreateSocket(const std::string& address,
-                                 int port) -> std::unique_ptr<ISocket> {
+auto SocketFactory::CreateSocket(const std::string& address, int port)
+    -> std::unique_ptr<ISocket> {
 #ifdef POSIX
   return std::make_unique<PosixSocket>(address, port);
 #elif defined WINDOWS
