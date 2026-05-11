@@ -36,7 +36,8 @@ class Response {
 
   static constexpr auto defaultMessage(int code) noexcept -> std::string_view {
     switch (code) {
-      return "OK";
+      case HttpStatusCodes::OK:
+        return "OK";
       case HttpStatusCodes::NOT_FOUND:
         return "Not Found";
       case HttpStatusCodes::FORBIDDEN:
