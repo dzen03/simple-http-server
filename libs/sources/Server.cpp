@@ -14,10 +14,10 @@
 #include <utility>
 
 #include "Directory.h"
-#include "ISocket.h"
 #include "Logger.h"
 #include "Request.h"
 #include "Response.h"
+#include "Socket/ISocket.h"
 #include "SocketFactory.h"
 #include "ThreadPool.h"
 #include "Util.h"
@@ -194,8 +194,8 @@ void Server::MapDirectory(const std::string& url, const Directory& directory) {
 }
 
 auto Server::Render(const std::filesystem::path& file,
-                    const std::string& content_type,
-                    HeadersMap headers) -> Response {
+                    const std::string& content_type, HeadersMap headers)
+    -> Response {
   std::ifstream temp(file, std::ios::binary);
 
   std::string content((std::istreambuf_iterator<char>(temp)),

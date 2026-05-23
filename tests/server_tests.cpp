@@ -9,10 +9,10 @@
 #include <utility>
 #include <vector>
 
-#include "ISocket.h"
 #include "Logger.h"
 #include "Request.h"
 #include "Server.h"
+#include "Socket/ISocket.h"
 #include "SocketFactory.h"
 
 namespace simple_http_server {
