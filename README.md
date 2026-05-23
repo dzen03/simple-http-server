@@ -40,6 +40,6 @@ cmake --build .
 ctest -V
 ```
 
-[^1]: I am using clang, [ninja](https://github.com/ninja-build/ninja), so they are tested.
+[^1]: I am using clang 22, [ninja](https://github.com/ninja-build/ninja), so they are tested.
 
-[^2]: I am using [llvm-mingw](https://github.com/mstorsjo/llvm-mingw), [ninja](https://github.com/ninja-build/ninja) (other things might not work; **llvm's mingw-make does NOT work**).
+[^2]: I am using [llvm-mingw](https://github.com/mstorsjo/llvm-mingw), mingw-make (Ninja works, but other things might not work).
