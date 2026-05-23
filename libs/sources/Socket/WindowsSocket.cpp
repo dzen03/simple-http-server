@@ -20,6 +20,7 @@
 #include <memory>
 #include <stdexcept>
 #include <string>
+#include <utility>
 #include <vector>
 
 // I have no idea, where SOCKET_ERROR, etc defined, so
@@ -89,7 +90,7 @@ auto WindowsSocket::SendMessageAndCloseClient(
 
 auto WindowsSocket::Accept() -> WindowsSocket::SocketDescriptor {
   auto client_addr = accept(socketDescriptor_, nullptr, nullptr);
-  if (client_addr == INVALID_SOCKET) {
+  if (std::cmp_equal(client_addr, INVALID_SOCKET)) {
     throw std::runtime_error("could not accept socket");
   }
 

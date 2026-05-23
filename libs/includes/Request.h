@@ -10,7 +10,7 @@ namespace simple_http_server {
 
 class Request {
  public:
-  enum Type : std::uint8_t {
+  enum class Type : std::uint8_t {
     GET,
     POST,
     // add here new types such as DELETE and etc
@@ -24,7 +24,7 @@ class Request {
   static auto ParseArguments(const std::string& url_with_args) -> ArgumentsMap;
   static auto DecodeURL(std::string& url_with_args);
 
-  Type type_ = UNKNOWN;
+  Type type_ = Type::UNKNOWN;
   std::string url_;
   ArgumentsMap arguments_;
   std::string httpVersion_;

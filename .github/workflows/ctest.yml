@@ -13,10 +13,10 @@ jobs:
         shell: bash
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Configure CMake
-        run: CXX=clang++-19 CC=clang-19 cmake -S ${{github.workspace}}/ -B ${{runner.workspace}}/build -DCLANG_TIDY_NAME=clang-tidy-19
+        run: CXX=clang++-22 CC=clang-22 cmake -S ${{github.workspace}}/ -B ${{runner.workspace}}/build -DCLANG_TIDY_NAME=clang-tidy-22
 
       - name: Build
         working-directory: ${{runner.workspace}}/build
@@ -40,10 +40,10 @@ jobs:
         shell: pwsh
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Configure CMake
-        run: cmake -S ${{github.workspace}}\ -B ${{runner.workspace}}\build -G "Ninja"
+        run: cmake -S ${{github.workspace}}\ -B ${{runner.workspace}}\build -G "MinGW Makefiles"
 
       - name: Build
         working-directory: ${{runner.workspace}}\build

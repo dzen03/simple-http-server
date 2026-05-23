@@ -17,6 +17,7 @@ namespace simple_http_server {
 
 // NOLINTNEXTLINE(cppcoreguidelines-macro-usage)
 #define X(level, name, i) level = (i),
+// NOLINTNEXTLINE(cppcoreguidelines-use-enum-class)
 enum Level : std::uint8_t { LOGGER_LEVELS };
 #undef X
 
@@ -32,6 +33,7 @@ class Logger {
  public:
 // NOLINTNEXTLINE(cppcoreguidelines-macro-usage)
 #define X(level, name, _) name,
+  // NOLINTNEXTLINE(bugprone-throwing-static-initialization)
   inline static const std::vector<char const*> level_name = {LOGGER_LEVELS};
 #undef X
  private:

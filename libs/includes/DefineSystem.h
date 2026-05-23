@@ -1,4 +1,4 @@
-#if defined __has_include
+#ifdef __has_include
 #if __has_include(<winsock2.h>)
 #define WINDOWS
 #elif __has_include(<unistd.h>)

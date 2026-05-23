@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.25)
 project(simple-http-server)
 
-set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD 23)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
@@ -19,28 +19,28 @@ if(CMAKE_BUILD_TYPE AND NOT CMAKE_BUILD_TYPE IN_LIST CMAKE_CONFIGURATION_TYPES)
 endif()
 
 if(CMAKE_C_COMPILER_ID STREQUAL GNU OR CMAKE_C_COMPILER_ID MATCHES Clang)
-    set(CMAKE_C_FLAGS       "-std=20 -pedantic -Wall -Werror -ggdb")
+    set(CMAKE_C_FLAGS       "-std=23 -pedantic -Wall -Werror -ggdb")
     set(CMAKE_C_FLAGS_ASAN  "${CMAKE_C_FLAGS_DEBUG} -fsanitize=address -fno-optimize-sibling-calls -fno-omit-frame-pointer")
     set(CMAKE_C_FLAGS_LSAN  "${CMAKE_C_FLAGS_DEBUG} -fsanitize=leak")
     set(CMAKE_C_FLAGS_MSAN  "${CMAKE_C_FLAGS_DEBUG} -fsanitize=memory -fno-optimize-sibling-calls -fno-omit-frame-pointer")
     set(CMAKE_C_FLAGS_UBSAN "${CMAKE_C_FLAGS_DEBUG} -fsanitize=undefined")
     set(CMAKE_C_FLAGS_COVERAGE "${CMAKE_C_FLAGS_DEBUG} --coverage")
 elseif(MSVC)
-    set(CMAKE_C_FLAGS       "/std:c20 /W4 /WX")
+    set(CMAKE_C_FLAGS       "/std:c23 /W4 /WX")
     set(CMAKE_C_FLAGS_ASAN  "${CMAKE_C_FLAGS_DEBUG} /fsanitize=address")
     set(CMAKE_EXE_LINKER_FLAGS_ASAN "/debug /INCREMENTAL:NO")
 endif()
 
 
 if(CMAKE_CXX_COMPILER_ID STREQUAL GNU OR CMAKE_CXX_COMPILER_ID MATCHES Clang)
-    set(CMAKE_CXX_FLAGS       "-std=c++20 -pedantic -Wall -Werror -ggdb")
+    set(CMAKE_CXX_FLAGS       "-std=c++23 -pedantic -Wall -Werror -ggdb")
     set(CMAKE_CXX_FLAGS_ASAN  "${CMAKE_CXX_FLAGS_DEBUG} -fsanitize=address -fno-optimize-sibling-calls -fno-omit-frame-pointer")
     set(CMAKE_CXX_FLAGS_LSAN  "${CMAKE_CXX_FLAGS_DEBUG} -fsanitize=leak")
     set(CMAKE_CXX_FLAGS_MSAN  "${CMAKE_CXX_FLAGS_DEBUG} -fsanitize=memory -fno-optimize-sibling-calls -fno-omit-frame-pointer")
     set(CMAKE_CXX_FLAGS_UBSAN "${CMAKE_CXX_FLAGS_DEBUG} -fsanitize=undefined")
     set(CMAKE_CXX_FLAGS_COVERAGE "${CMAKE_CXX_FLAGS_DEBUG} --coverage")
 elseif(MSVC)
-    set(CMAKE_CXX_FLAGS       "/std:c++20 /W4 /WX")
+    set(CMAKE_CXX_FLAGS       "/std:c++23 /W4 /WX")
     set(CMAKE_CXX_FLAGS_ASAN  "${CMAKE_CXX_FLAGS_DEBUG} /fsanitize=address")
     set(CMAKE_EXE_LINKER_FLAGS_ASAN "/debug /INCREMENTAL:NO")
 endif()
@@ -101,7 +101,7 @@ if(BUILD_TESTING)
     include(FetchContent)
     FetchContent_Declare(
             googletest
-            URL https://github.com/google/googletest/archive/d144031940543e15423a25ae5a8a74141044862f.zip
+            URL https://github.com/google/googletest/archive/d72f9c8aea6817cdf1ca0ac10887f328de7f3da2.zip
             DOWNLOAD_EXTRACT_TIMESTAMP NEW
     )
 

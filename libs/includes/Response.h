@@ -19,6 +19,7 @@ class Response {
 
   [[nodiscard]] auto Empty() const -> bool { return (statusCode_ == 0); }
 
+  // NOLINTNEXTLINE(cppcoreguidelines-use-enum-class)
   enum HttpStatusCodes : std::uint16_t {
     OK = 200,
     FORBIDDEN = 403,
@@ -33,11 +34,20 @@ class Response {
   HeadersMap headers_;
   std::string body_;
 
-  inline static const std::unordered_map<int, std::string> defaultMessages_{
-      {OK, "OK"},
-      {NOT_FOUND, "Not Found"},
-      {FORBIDDEN, "Forbidden"},
-      {INTERNAL_ERROR, "Internal Server Error"}};
+  static constexpr auto defaultMessage(int code) noexcept -> std::string_view {
+    switch (code) {
+      case HttpStatusCodes::OK:
+        return "OK";
+      case HttpStatusCodes::NOT_FOUND:
+        return "Not Found";
+      case HttpStatusCodes::FORBIDDEN:
+        return "Forbidden";
+      case HttpStatusCodes::INTERNAL_ERROR:
+        return "Internal Server Error";
+      default:
+        return "Unknown";
+    }
+  }
 };
 
 }  // namespace simple_http_server

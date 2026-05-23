@@ -25,7 +25,7 @@ TEST(Socket, BasicPong) {
 
   ASSERT_TRUE(server->BindAndListen());
 
-  std::thread server_thread([&server, &test_message]() {
+  std::thread server_thread([&server, &test_message]() -> auto {
     auto client_sock = server->Accept();
 
     const auto& received = server->ReceiveMessage(client_sock);

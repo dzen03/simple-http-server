@@ -11,7 +11,7 @@
 
 ThreadPool::ThreadPool(std::uint64_t numThreads) {
   for (decltype(numThreads) i = 0; i < numThreads; ++i) {
-    workers_.emplace_back([this] { workerThread(); });
+    workers_.emplace_back([this]() -> void { workerThread(); });
   }
 }
 
@@ -39,7 +39,8 @@ void ThreadPool::workerThread() {
     std::function<void()> task;
     {
       std::unique_lock<std::mutex> lock(queueMutex_);
-      condition_.wait(lock, [this] { return stop_ || !tasks_.empty(); });
+      condition_.wait(lock,
+                      [this]() -> auto { return stop_ || !tasks_.empty(); });
 
       if (stop_ && tasks_.empty()) {
         return;
